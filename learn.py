@@ -205,7 +205,9 @@ bpy.data.objects['Camera'].data.clip_end = 100  # 裁剪终点
 bpy.data.objects['Camera'].data.angle = 60 * (pi / 180.0)  # 视野度数 60
 bpy.data.objects['Camera'].data.angle = math.radians(60)  # 视野度数 60
 bpy.data.objects['Camera'].data.lens = 31.18  # 焦距 mm
-bpy.data.objects['Camera'].data.sensor_width = 36  # 传感器 适配尺寸 mm
+bpy.data.objects['Camera'].data.sensor_fit = 'VERTICAL'  # ('AUTO', 'HORIZONTAL', 'VERTICAL') 传感器适配方式
+bpy.data.objects['Camera'].data.sensor_width = 36  # 传感器 适配尺寸 mm 宽度
+bpy.data.objects['Camera'].data.sensor_height = 50  # 传感器 适配尺寸 mm 高度
 
 # 相机焦距 转换 视野 公式
 lens = 31.18
