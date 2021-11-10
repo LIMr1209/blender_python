@@ -1,5 +1,6 @@
 import bpy
 import math
+import mathutils
 
 '''
 角度和弧度关系是：2π 弧度 = 360°。从而 1°≈0.0174533 弧度，1 弧度≈57.29578°。
@@ -213,6 +214,21 @@ bpy.data.objects['Camera'].data.sensor_height = 50  # 传感器 适配尺寸 mm 
 lens = 31.18
 sensor_width = 36
 angle = math.degrees(2 * math.atan(sensor_width / (2 * lens)))
+
+# 旋转模式 转化
+
+# https://blender.stackexchange.com/questions/152893/changing-rotation-mode-from-yxz-to-xyz-without-changing-orientation
+
+ob = bpy.context.active_object
+
+x, y, z = 1, 2, 3
+
+rot_YXZ = mathutils.Euler((x, y, z), 'YXZ')
+rot_mat = rot_YXZ.to_matrix()
+rot_XYZ = rot_mat.to_euler('XYZ')
+
+ob.rotation_mode = 'XYZ'
+ob.rotation_euler = rot_XYZ
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
