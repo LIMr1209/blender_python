@@ -90,8 +90,31 @@ bpy.ops.object.delete(use_global=False)
 
 # 删除物体
 # https://blender.stackexchange.com/questions/27234/python-how-to-completely-remove-an-object
-objs = [ob for ob in bpy.context.scene.objects if ob.type in ('CAMERA', 'MESH')]
+objs = [ob for ob in bpy.context.scene.objects if ob.type in ('CAMERA', 'POINT', 'EMPTY')]
 bpy.ops.object.delete({"selected_objects": objs})
+
+
+# 删除层级
+# https://blender.stackexchange.com/questions/44653/delete-parent-object-hierarchy-in-code/44786
+def delete_hierarchy(parent_obj_name):
+    obj = bpy.data.objects[parent_obj_name]
+    obj.animation_data_clear()
+    objs = set()
+
+    # Go over all the objects in the hierarchy like @zeffi suggested:
+    def get_child_names(obj):
+        for child in obj.children:
+            objs.add(child)
+            if child.children:
+                get_child_names(child)
+
+    get_child_names(obj)
+    # Remove the animation from the all the child objects
+    for obj in objs:
+        obj.animation_data_clear()
+
+    bpy.ops.object.delete({"selected_objects": objs})
+
 
 '''
 切换到编辑模式时，此时激活的对象将是用户可以在该编辑模式会话中编辑的唯一对象。如果用户要在编辑模式下操作不同的对象，则必须先切换回对象模式以激活所需的对象。只有在切换回编辑模式并激活所需对象后，他才能对其进行操作
