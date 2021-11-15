@@ -88,6 +88,11 @@ bpy.ops.mesh.primitive_cone_add(radius1=0.5, location=(0, 0, 0))
 # 删除选中的所有物体
 bpy.ops.object.delete(use_global=False)
 
+# 删除物体
+# https://blender.stackexchange.com/questions/27234/python-how-to-completely-remove-an-object
+objs = [ob for ob in bpy.context.scene.objects if ob.type in ('CAMERA', 'MESH')]
+bpy.ops.object.delete({"selected_objects": objs})
+
 '''
 切换到编辑模式时，此时激活的对象将是用户可以在该编辑模式会话中编辑的唯一对象。如果用户要在编辑模式下操作不同的对象，则必须先切换回对象模式以激活所需的对象。只有在切换回编辑模式并激活所需对象后，他才能对其进行操作
 '''
