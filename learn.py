@@ -238,6 +238,15 @@ bpy.data.objects['Camera'].data.sensor_fit = 'VERTICAL'  # ('AUTO', 'HORIZONTAL'
 bpy.data.objects['Camera'].data.sensor_width = 36  # 传感器 适配尺寸 mm 宽度
 bpy.data.objects['Camera'].data.sensor_height = 50  # 传感器 适配尺寸 mm 高度
 
+
+# 获取帧绑定的相机标记
+# https://blender.stackexchange.com/questions/43764/bind-camera-to-marker-via-python
+def get_frame_camera(frame):
+    all_markers = bpy.context.scene.timeline_markers
+    for i in all_markers:
+        if i.frame == frame:
+            return i.camera
+
 # 相机焦距 转换 视野 公式
 lens = 31.18
 sensor_width = 36
