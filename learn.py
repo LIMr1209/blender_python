@@ -245,8 +245,8 @@ camera_obj = bpy.data.objects['Camera']
 constraint = camera_obj.constraints.new(type='TRACK_TO')
 constraint.target = target_obj
 # 移动目标物体， camera_obj 应用可视变换,更新变换信息
-bpy.ops.object.visual_transform_apply()  # 应用可视变换
-camera_obj.constraints.remove(constraint)  # 删除变换
+bpy.ops.object.visual_transform_apply()  # 应用可视变换（将实际的坐标给到坐标属性值）
+camera_obj.constraints.remove(constraint)  # 删除约束
 
 
 # 获取帧绑定的相机标记
