@@ -275,15 +275,17 @@ rot_XYZ = rot_mat.to_euler('XYZ')
 ob.rotation_mode = 'XYZ'
 ob.rotation_euler = rot_XYZ
 
-mat = bpy.context.object.active_material # 返回物体激活的材质
+# 材质
+# https://vividfax.github.io/2021/01/14/blender-materials.html
+mat = bpy.context.object.active_material  # 返回物体激活的材质
 if not mat:
-    mat = bpy.data.materials.new(name='Material') # 创建材质
+    mat = bpy.data.materials.new(name='Material')  # 创建材质
     bpy.context.object.active_material = mat  # 设置物体激活的材质
 
 # 清空材质信息
 if mat.node_tree:
-    mat.node_tree.links.clear()
-    mat.node_tree.nodes.clear()
+    mat.node_tree.links.clear()  # 节点树中删除所有节点链接
+    mat.node_tree.nodes.clear()  # 节点树中删除所有节点
 
 bpy.context.object.active_material_index = 0  # 激活使用材质的索引
 
@@ -291,7 +293,8 @@ nodes = mat.node_tree.nodes
 links = mat.node_tree.links
 output = nodes.new(type='ShaderNodeOutputMaterial')
 shader = nodes.new(type='ShaderNodeBsdfPrincipled')
-links.new(shader.outputs[0], output.inputs[0])
+links.new(shader.outputs[0], output.inputs[0])  # 将节点链接添加到此节点树
+
 shader.inputs['Base Color'].default_value = (255.0, 255.0, 255.0, 1.0)  # 基础色
 shader.inputs['Subsurface'].default_value = 0.0  # 次表面
 shader.inputs['Subsurface Radius'].default_value = [1.0, 0.20000000298023224, 0.10000000149011612]  # 次表面半径
