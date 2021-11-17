@@ -264,11 +264,8 @@ sensor_width = 36
 angle = math.degrees(2 * math.atan(sensor_width / (2 * lens)))
 
 # 旋转模式 转化
-
 # https://blender.stackexchange.com/questions/152893/changing-rotation-mode-from-yxz-to-xyz-without-changing-orientation
-
 ob = bpy.context.active_object
-
 x, y, z = 1, 2, 3
 
 rot_YXZ = mathutils.Euler((x, y, z), 'YXZ')
@@ -277,6 +274,47 @@ rot_XYZ = rot_mat.to_euler('XYZ')
 
 ob.rotation_mode = 'XYZ'
 ob.rotation_euler = rot_XYZ
+
+mat = bpy.context.object.active_material # 返回物体激活的材质
+if not mat:
+    mat = bpy.data.materials.new(name='Material') # 创建材质
+    bpy.context.object.active_material = mat  # 设置物体激活的材质
+
+# 清空材质信息
+if mat.node_tree:
+    mat.node_tree.links.clear()
+    mat.node_tree.nodes.clear()
+
+bpy.context.object.active_material_index = 0  # 激活使用材质的索引
+
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+output = nodes.new(type='ShaderNodeOutputMaterial')
+shader = nodes.new(type='ShaderNodeBsdfPrincipled')
+links.new(shader.outputs[0], output.inputs[0])
+shader.inputs['Base Color'].default_value = (255.0, 255.0, 255.0, 1.0)  # 基础色
+shader.inputs['Subsurface'].default_value = 0.0  # 次表面
+shader.inputs['Subsurface Radius'].default_value = [1.0, 0.20000000298023224, 0.10000000149011612]  # 次表面半径
+shader.inputs['Subsurface Color'].default_value = (255.0, 255.0, 255.0, 1.0)  # 次表面颜色
+shader.inputs['Metallic'].default_value = 0.0  # 金属度
+shader.inputs['Specular'].default_value = 0.5  # 高光
+shader.inputs['Specular Tint'].default_value = 0.0  # 高光染色
+shader.inputs['Roughness'].default_value = 0.4  # 精度
+shader.inputs['Anisotropic'].default_value = 0.0  # 各项异性过滤
+shader.inputs['Anisotropic Rotation'].default_value = 0.0  # 各项异性旋转
+shader.inputs['Sheen'].default_value = 0.0  # 光泽
+shader.inputs['Sheen Tint'].default_value = 0.5  # 光泽染色
+shader.inputs['Clearcoat'].default_value = 0.0  # 清漆
+shader.inputs['Clearcoat Roughness'].default_value = 0.03  # 清漆粗糙度
+shader.inputs['IOR'].default_value = 1.45  # IOP 折射率
+shader.inputs['Transmission'].default_value = 0.0  # 透射
+shader.inputs['Transmission Roughness'].default_value = 0.0  # 透射粗糙度
+shader.inputs['Emission'].default_value = (0.0, 0.0, 0.0, 1.0)  # 自发光（发射）
+shader.inputs['Emission Strength'].default_value = 1.0  # 自发光强度
+shader.inputs['Alpha'].default_value = 1.0  # 透明度 Alpha
+shader.inputs['Normal'].default_value  # 法向
+shader.inputs['Clearcoat Normal'].default_value  # 清漆法线
+shader.inputs['Tangent'].default_value  # 切向（正切）
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
