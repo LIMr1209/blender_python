@@ -238,6 +238,16 @@ bpy.data.objects['Camera'].data.sensor_fit = 'VERTICAL'  # ('AUTO', 'HORIZONTAL'
 bpy.data.objects['Camera'].data.sensor_width = 36  # 传感器 适配尺寸 mm 宽度
 bpy.data.objects['Camera'].data.sensor_height = 50  # 传感器 适配尺寸 mm 高度
 
+# 添加标准跟随约束
+target_obj = bpy.data.objects['Cube']
+camera_obj = bpy.data.objects['Camera']
+
+constraint = camera_obj.constraints.new(type='TRACK_TO')
+constraint.target = target_obj
+# 移动目标物体， camera_obj 应用可视变换,更新变换信息
+bpy.ops.object.visual_transform_apply()  # 应用可视变换
+camera_obj.constraints.remove(constraint)  # 删除变换
+
 
 # 获取帧绑定的相机标记
 # https://blender.stackexchange.com/questions/43764/bind-camera-to-marker-via-python
@@ -246,6 +256,7 @@ def get_frame_camera(frame):
     for i in all_markers:
         if i.frame == frame:
             return i.camera
+
 
 # 相机焦距 转换 视野 公式
 lens = 31.18
