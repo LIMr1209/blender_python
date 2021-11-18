@@ -337,6 +337,37 @@ for material in bpy.data.materials:
     material.user_clear()
     bpy.data.materials.remove(material)
 
+
+# 复制对象
+def duplicate(obj, data=True, actions=True):
+    obj_copy = obj.copy()
+    if data:
+        obj_copy.data = obj_copy.data.copy()
+    if actions and obj_copy.animation_data:
+        obj_copy.animation_data.action = obj_copy.animation_data.action.copy()
+    bpy.context.collection.objects.link(obj_copy)
+    return obj_copy
+
+
+obj_copy = duplicate(
+    obj=bpy.context.active_object,
+    data=True,
+    actions=True,
+)
+
+# 新建集合 并关联 obj
+# https://blender.stackexchange.com/questions/132112/whats-the-blender-2-8-command-for-adding-an-object-to-a-collection-using-python
+# https://blender.stackexchange.com/questions/126259/what-is-the-python-code-related-to-collection-actions-for-blender-2-8
+model = bpy.context.selected_objects[:]
+for obj in model:
+    bpy.data.collections['collection'].objects.link(obj)
+
+# 激活指定集合 并添加空对象
+bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_collection.children['Product']
+bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
+bpy.context.object.name = "ProductContainer"
+
+
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
 #
