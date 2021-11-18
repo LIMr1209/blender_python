@@ -292,8 +292,21 @@ bpy.context.object.active_material_index = 0  # 激活使用材质的索引
 nodes = mat.node_tree.nodes
 links = mat.node_tree.links
 output = nodes.new(type='ShaderNodeOutputMaterial')
-shader = nodes.new(type='ShaderNodeBsdfPrincipled')
+shader = nodes.new(type='ShaderNodeBsdfPrincipled')  # 原理化BSDF
 links.new(shader.outputs[0], output.inputs[0])  # 将节点链接添加到此节点树
+'''
+>>> links[0].from_node
+bpy.data.materials['Material'].node_tree.nodes["Principled BSDF"]
+
+>>> links[0].from_socket
+bpy.data.materials['Material'].node_tree.nodes["Principled BSDF"].outputs[0]
+
+>>> links[0].to_node
+bpy.data.materials['Material'].node_tree.nodes["Material Output"]
+
+>>> links[0].to_socket
+bpy.data.materials['Material'].node_tree.nodes["Material Output"].inputs[0]
+'''
 
 shader.inputs['Base Color'].default_value = (255.0, 255.0, 255.0, 1.0)  # 基础色
 shader.inputs['Subsurface'].default_value = 0.0  # 次表面
@@ -318,6 +331,11 @@ shader.inputs['Alpha'].default_value = 1.0  # 透明度 Alpha
 shader.inputs['Normal'].default_value  # 法向
 shader.inputs['Clearcoat Normal'].default_value  # 清漆法线
 shader.inputs['Tangent'].default_value  # 切向（正切）
+
+# 删除所有材质
+for material in bpy.data.materials:
+    material.user_clear()
+    bpy.data.materials.remove(material)
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
