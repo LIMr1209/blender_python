@@ -339,6 +339,8 @@ for material in bpy.data.materials:
 
 
 # 复制对象
+# https://blender.stackexchange.com/questions/45099/duplicating-a-mesh-object/45100
+# https://b3d.interplanety.org/en/making-a-copy-of-an-object-using-the-blender-python-api/
 def duplicate(obj, data=True, actions=True):
     obj_copy = obj.copy()
     if data:
@@ -367,6 +369,9 @@ bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_co
 bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
 bpy.context.object.name = "ProductContainer"
 
+# 移动对象到 集合  不建议使用
+# https://devtalk.blender.org/t/where-to-find-collection-index-for-moving-an-object/3289
+bpy.ops.object.move_to_collection(collection_index=1)  # collection_index 集合索引
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
