@@ -91,8 +91,7 @@ bpy.ops.object.delete(use_global=False)
 # 删除物体
 # https://blender.stackexchange.com/questions/27234/python-how-to-completely-remove-an-object
 objs = [ob for ob in bpy.context.scene.objects if ob.type in ('CAMERA', 'POINT', 'EMPTY')]
-bpy.ops.object.delete({"selected_objects": objs})
-
+bpy.ops.object.delete({"selected_objects": objs}) # selected_objects 选中上下文  active_object 活动上下文
 
 # 删除层级
 # https://blender.stackexchange.com/questions/44653/delete-parent-object-hierarchy-in-code/44786
@@ -371,7 +370,7 @@ bpy.context.object.name = "ProductContainer"
 
 # 移动对象到 集合  不建议使用
 # https://devtalk.blender.org/t/where-to-find-collection-index-for-moving-an-object/3289
-bpy.ops.object.move_to_collection(collection_index=1)  # collection_index 集合索引
+bpy.ops.object.move_to_collection(collection_index=9)  # collection_index 集合索引
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
