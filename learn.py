@@ -290,6 +290,7 @@ bpy.context.object.active_material_index = 0  # 激活使用材质的索引
 
 nodes = mat.node_tree.nodes
 links = mat.node_tree.links
+# ShaderNodeTexImage 图片节点
 output = nodes.new(type='ShaderNodeOutputMaterial')
 shader = nodes.new(type='ShaderNodeBsdfPrincipled')  # 原理化BSDF
 links.new(shader.outputs[0], output.inputs[0])  # 将节点链接添加到此节点树
