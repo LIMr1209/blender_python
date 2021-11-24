@@ -91,7 +91,8 @@ bpy.ops.object.delete(use_global=False)
 # 删除物体
 # https://blender.stackexchange.com/questions/27234/python-how-to-completely-remove-an-object
 objs = [ob for ob in bpy.context.scene.objects if ob.type in ('CAMERA', 'POINT', 'EMPTY')]
-bpy.ops.object.delete({"selected_objects": objs}) # selected_objects 选中上下文  active_object 活动上下文
+bpy.ops.object.delete({"selected_objects": objs})  # selected_objects 选中上下文  active_object 活动上下文
+
 
 # 删除层级
 # https://blender.stackexchange.com/questions/44653/delete-parent-object-hierarchy-in-code/44786
@@ -290,7 +291,6 @@ bpy.context.object.active_material_index = 0  # 激活使用材质的索引
 
 nodes = mat.node_tree.nodes
 links = mat.node_tree.links
-# ShaderNodeTexImage 图片节点
 output = nodes.new(type='ShaderNodeOutputMaterial')
 shader = nodes.new(type='ShaderNodeBsdfPrincipled')  # 原理化BSDF
 links.new(shader.outputs[0], output.inputs[0])  # 将节点链接添加到此节点树
@@ -332,6 +332,113 @@ shader.inputs['Normal'].default_value  # 法向
 shader.inputs['Clearcoat Normal'].default_value  # 清漆法线
 shader.inputs['Tangent'].default_value  # 切向（正切）
 
+image_node = nodes.new(type='ShaderNodeTexImage')  # 图片节点
+bpy.ops.image.open(filepath=r'C:\Users\thn\Desktop\Wood068_4K_NormalGL.jpg')  # 添加图片数据
+image = bpy.data.images['Wood068_4K_NormalGL.jpg']
+image_node.image = image  # 图片节点关联图片
+links.new(image_node.outputs[0], shader.inputs[0])
+# shader.inputs['Base Color'].links[0].from_node -->image_node
+# 图片节点 链接 原理化BSDF base color
+'''
+ShaderNode(NodeInternal)
+ShaderNodeAddShader(ShaderNode)
+ShaderNodeAmbientOcclusion(ShaderNode)
+ShaderNodeAttribute(ShaderNode)
+ShaderNodeBackground(ShaderNode)
+ShaderNodeBevel(ShaderNode)
+ShaderNodeBlackbody(ShaderNode)
+ShaderNodeBrightContrast(ShaderNode)
+ShaderNodeBsdfAnisotropic(ShaderNode)
+ShaderNodeBsdfDiffuse(ShaderNode)
+ShaderNodeBsdfGlass(ShaderNode)
+ShaderNodeBsdfGlossy(ShaderNode)
+ShaderNodeBsdfHair(ShaderNode)
+ShaderNodeBsdfHairPrincipled(ShaderNode)
+ShaderNodeBsdfPrincipled(ShaderNode)
+ShaderNodeBsdfRefraction(ShaderNode)
+ShaderNodeBsdfToon(ShaderNode)
+ShaderNodeBsdfTranslucent(ShaderNode)
+ShaderNodeBsdfTransparent(ShaderNode)
+ShaderNodeBsdfVelvet(ShaderNode)
+ShaderNodeBump(ShaderNode)
+ShaderNodeCameraData(ShaderNode)
+ShaderNodeClamp(ShaderNode)
+ShaderNodeCombineHSV(ShaderNode)
+ShaderNodeCombineRGB(ShaderNode)
+ShaderNodeCombineXYZ(ShaderNode)
+ShaderNodeCustomGroup(ShaderNode)
+ShaderNodeDisplacement(ShaderNode)
+ShaderNodeEeveeSpecular(ShaderNode)
+ShaderNodeEmission(ShaderNode)
+ShaderNodeFresnel(ShaderNode)
+ShaderNodeGamma(ShaderNode)
+ShaderNodeGroup(ShaderNode)
+ShaderNodeHairInfo(ShaderNode)
+ShaderNodeHoldout(ShaderNode)
+ShaderNodeHueSaturation(ShaderNode)
+ShaderNodeInvert(ShaderNode)
+ShaderNodeLayerWeight(ShaderNode)
+ShaderNodeLightFalloff(ShaderNode)
+ShaderNodeLightPath(ShaderNode)
+ShaderNodeMapRange(ShaderNode)
+ShaderNodeMapping(ShaderNode)
+ShaderNodeMath(ShaderNode)
+ShaderNodeMixRGB(ShaderNode)
+ShaderNodeMixShader(ShaderNode)
+ShaderNodeNewGeometry(ShaderNode)
+ShaderNodeNormal(ShaderNode)
+ShaderNodeNormalMap(ShaderNode)
+ShaderNodeObjectInfo(ShaderNode)
+ShaderNodeOutputAOV(ShaderNode)
+ShaderNodeOutputLight(ShaderNode)
+ShaderNodeOutputLineStyle(ShaderNode)
+ShaderNodeOutputMaterial(ShaderNode)
+ShaderNodeOutputWorld(ShaderNode)
+ShaderNodeParticleInfo(ShaderNode)
+ShaderNodeRGB(ShaderNode)
+ShaderNodeRGBCurve(ShaderNode)
+ShaderNodeRGBToBW(ShaderNode)
+ShaderNodeScript(ShaderNode)
+ShaderNodeSeparateHSV(ShaderNode)
+ShaderNodeSeparateRGB(ShaderNode)
+ShaderNodeSeparateXYZ(ShaderNode)
+ShaderNodeShaderToRGB(ShaderNode)
+ShaderNodeSqueeze(ShaderNode)
+ShaderNodeSubsurfaceScattering(ShaderNode)
+ShaderNodeTangent(ShaderNode)
+ShaderNodeTexBrick(ShaderNode)
+ShaderNodeTexChecker(ShaderNode)
+ShaderNodeTexCoord(ShaderNode)
+ShaderNodeTexEnvironment(ShaderNode)
+ShaderNodeTexGradient(ShaderNode)
+ShaderNodeTexIES(ShaderNode)
+ShaderNodeTexImage(ShaderNode)
+ShaderNodeTexMagic(ShaderNode)
+ShaderNodeTexMusgrave(ShaderNode)
+ShaderNodeTexNoise(ShaderNode)
+ShaderNodeTexPointDensity(ShaderNode)
+ShaderNodeTexSky(ShaderNode)
+ShaderNodeTexVoronoi(ShaderNode)
+ShaderNodeTexWave(ShaderNode)
+ShaderNodeTexWhiteNoise(ShaderNode)
+ShaderNodeTree(NodeTree)
+ShaderNodeUVAlongStroke(ShaderNode)
+ShaderNodeUVMap(ShaderNode)
+ShaderNodeValToRGB(ShaderNode)
+ShaderNodeValue(ShaderNode)
+ShaderNodeVectorCurve(ShaderNode)
+ShaderNodeVectorDisplacement(ShaderNode)
+ShaderNodeVectorMath(ShaderNode)
+ShaderNodeVectorRotate(ShaderNode)
+ShaderNodeVectorTransform(ShaderNode)
+ShaderNodeVertexColor(ShaderNode)
+ShaderNodeVolumeAbsorption(ShaderNode)
+ShaderNodeVolumeInfo(ShaderNode)
+ShaderNodeVolumePrincipled(ShaderNode)
+ShaderNodeVolumeScatter(ShaderNode)
+ShaderNodeWavelength(ShaderNode)
+ShaderNodeWireframe(ShaderNode)
+'''
 # 删除所有材质
 for material in bpy.data.materials:
     material.user_clear()
