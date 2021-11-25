@@ -1,6 +1,6 @@
 from scipy.spatial.transform import Rotation as R
 
-origin_r = R.from_euler('zyx', [-40, 58.8, -102.6], degrees=True)
+origin_r = R.from_euler('zyx', [-34.6, 59.0, -63.0], degrees=True)
 m = origin_r.as_matrix()
 
 # Euler((radians(-34.6), radians(59.0), radians(-63.0)), 'zyx').to_matrix()
@@ -32,5 +32,16 @@ def convert_matrix(m):
 
 
 new_m = convert_matrix(m)
+print(new_m)
 r = R.from_matrix(new_m)
 print(r.as_euler('xyz', degrees=True))
+
+# from mathutils import Euler, Matrix
+# from math import radians
+#
+# m = Euler((radians(-34.6), radians(59.0), radians(float(-63.0))),
+#           'ZYX').to_matrix()
+# b_m = [m[0], -m[2], m[1]]
+# matrix = Matrix(b_m)
+# euler = matrix.to_euler('XYZ')
+
