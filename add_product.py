@@ -166,6 +166,18 @@ def add_product_new(model_path):
     # 清除动画
     model = bpy.context.selected_objects[:]
     for i in model:
+        old_name = i.name
+        index = old_name.rfind('.')
+        if index != -1:
+            for z in old_name[index + 1:]:
+                if not z.isdigit():
+                    need = False
+                    break
+            else:
+                need = True
+            if need:
+                new_name = old_name[:index] + old_name[index + 1:]
+                i.name = new_name
         i.animation_data_clear()
     # 建立空的父对象 对父对象进行 变换
     bpy.ops.object.empty_add(
@@ -218,16 +230,107 @@ def update_camera(camera_option):
             camera.data.clip_start = float(camera_option[i]["near"])
             camera.data.clip_end = float(camera_option[i]["far"])
             camera.location = camera_option[i]["location"]
+            # 父子级方法  前端传父级角度
             # camera.rotation_mode = "YZX"
+            # YXZ
             # camera.rotation_euler = camera_option[i]["rotate"]
-            rotate = camera_option[i]["rotate"]
-            m = Euler((float(rotate[0]), float(rotate[1]), float(rotate[2])),
-                      'ZYX').to_matrix()
-            b_m = [m[0], -m[2], m[1]]
-            matrix = Matrix(b_m)
-            euler = matrix.to_euler('XYZ')
-            camera.rotation_mode = "XYZ"
-            camera.rotation_euler = euler
+            # 合并相机父子级  前端传合并好的角度
+            # rotate = camera_option[i]["rotate"]
+            # m = Euler((float(rotate[0]), float(rotate[1]), float(rotate[2])),
+            #           'ZYX').to_matrix()
+            # b_m = [m[0], -m[2], m[1]]
+            # matrix = Matrix(b_m)
+            # euler = matrix.to_euler('XYZ')
+            # camera.rotation_mode = "XYZ"
+            # camera.rotation_euler = euler
+            # 新方法
+            camera.rotation_mode = "YXZ"
+            camera.rotation_euler = camera_option[i]["rotate"]
+
+
+# HEX转linearRGB
+def srgb_to_linearrgb(c):
+    if c < 0:
+        return 0
+    elif c < 0.04045:
+        return c / 12.92
+    else:
+        return ((c + 0.055) / 1.055) ** 2.4
+
+
+def hex2rgb(color, alpha=1):
+    color = int('0x' + color[1:], 16)  # #FFFFFF
+    r = (color & 0xff0000) >> 16
+    g = (color & 0x00ff00) >> 8
+    b = (color & 0x0000ff)
+    return tuple([srgb_to_linearrgb(c / 0xff) for c in (r, g, b)] + [alpha])
+
+
+# 基础色
+def Basecolor(color, map, baseColorIMG, baseColorRGB, baseColorMix, links, BSDF):
+    if map:
+        baseColorIMG.image = bpy.data.images.load(map)
+        baseColorRGB.outputs[0].default_value = (hex2rgb(color))
+        links.new(baseColorMix.outputs[0], BSDF.inputs[0])
+    else:
+        baseColorRGB.outputs[0].default_value = (hex2rgb(color))
+        links.new(baseColorRGB.outputs[0], BSDF.inputs[0])
+
+
+# 金属度
+def Metallic(metalness, metalnessMap, metallicIMG, metallicFactor, metallicMix, links, BSDF):
+    if metalnessMap:
+        metallicIMG.image = bpy.data.images.load(metalnessMap)
+        metallicIMG.image.colorspace_settings.name = 'Non-Color'
+        metallicFactor.outputs[0].default_value = 1
+        links.new(metallicMix.outputs[0], BSDF.inputs[4])
+    else:
+        metallicFactor.outputs[0].default_value = metalness
+        links.new(metallicFactor.outputs[0], BSDF.inputs[4])
+
+
+# 粗糙度
+def Roughness(roughness, roughnessMap, roughnessIMG, roughnessFactor, roughnessMix, links, BSDF):
+    if roughnessMap:
+        roughnessIMG.image = bpy.data.images.load(roughnessMap)
+        roughnessIMG.image.colorspace_settings.name = 'Non-Color'
+        roughnessFactor.outputs[0].default_value = 1
+        links.new(roughnessMix.outputs[0], BSDF.inputs[7])
+    else:
+        roughnessFactor.outputs[0].default_value = roughness
+        links.new(roughnessFactor.outputs[0], BSDF.inputs[7])
+
+
+# 透射率
+def Transmission(ior, transmission, iorFactor, transmissionFactor, links, BSDF):
+    iorFactor.outputs[0].default_value = ior
+    transmissionFactor.outputs[0].default_value = transmission
+    links.new(iorFactor.outputs[0], BSDF.inputs[14])
+    links.new(transmissionFactor.outputs[0], BSDF.inputs[15])
+
+
+# 发光
+def Emission(emissive, emissiveIntensity, emissiveMap, emissiveIMG, emissiveRGB, emissiveFactor, emissiveMix, links,
+             BSDF):
+    if emissiveMap:
+        emissiveIMG.image = bpy.data.images.load(emissiveMap)
+        emissiveRGB.outputs[0].default_value = (1, 1, 1, 1)
+        emissiveFactor.outputs[0].default_value = emissiveIntensity
+        links.new(emissiveMix.outputs[0], BSDF.inputs[17])
+        links.new(emissiveFactor.outputs[0], BSDF.inputs[18])
+    else:
+        emissiveRGB.outputs[0].default_value = (hex2rgb(emissive))
+        emissiveFactor.outputs[0].default_value = emissiveIntensity
+        links.new(emissiveRGB.outputs[0], BSDF.inputs[17])
+        links.new(emissiveFactor.outputs[0], BSDF.inputs[18])
+
+
+# 法线/凹凸
+def Normal(normalMap, normalIMG, links, BSDF):
+    if normalMap:
+        normalIMG.image = bpy.data.images.load(normalMap)
+        normalIMG.image.colorspace_settings.name = 'Non-Color'
+        links.new(normalMap.outputs[0], BSDF.inputs[20])
 
 
 def update_material(material_option):
@@ -237,29 +340,50 @@ def update_material(material_option):
     :return:
     """
     for j, i in enumerate(material_option):
-        obj = bpy.data.objects[i.pop('obj_name')]
-        mat = obj.active_material
-        if not mat:
-            mat = bpy.data.materials.new(name='mat.' + str(j).zfill(4))  # 创建材质
-            obj.active_material = mat  # 设置物体激活的材质
-        if mat.node_tree:
-            mat.node_tree.links.clear()  # 节点树中删除所有节点链接
-            mat.node_tree.nodes.clear()  # 节点树中删除所有节点
+        mat_template = bpy.data.materials['StandardMaterial']
+        obj = bpy.data.objects[i.pop('name')]
+        mat = mat_template.copy()
+        obj.active_material = mat
         nodes = mat.node_tree.nodes
         links = mat.node_tree.links
-        output = nodes.new(type='ShaderNodeOutputMaterial')
-        shader = nodes.new(type='ShaderNodeBsdfPrincipled')  # 原理化BSDF
-        links.new(shader.outputs[0], output.inputs[0])  # 将节点链接添加到此节点树
-        for z, y in i.items():
-            # 颜色 RGB 转换
-            if z in ['base_color', 'subsurface_color', 'emission']:
-                y = [i / 255.0 for i in y[:3]] + y[-1:]
-            if z == 'ior':
-                z = 'IOR'
-            else:
-                temp = [i.capitalize() for i in z.split('_')]
-                z = ' '.join(temp)
-            shader.inputs[z].default_value = y
+        BSDF = nodes.get('Principled BSDF')
+        baseColorIMG = nodes.get('baseColorIMG')
+        baseColorRGB = nodes.get('baseColorRGB')
+        baseColorMix = nodes.get('baseColorMix')
+        metallicMix = nodes.get('metallicMix')
+        metallicIMG = nodes.get('metallicIMG')
+        metallicFactor = nodes.get('metallicFactor')
+        roughnessIMG = nodes.get('roughnessIMG')
+        roughnessFactor = nodes.get('roughnessFactor')
+        roughnessMix = nodes.get('roughnessMix')
+        iorFactor = nodes.get('iorFactor')
+        transmissionFactor = nodes.get('transmissionFactor')
+        emissiveIMG = nodes.get('emissiveIMG')
+        emissiveRGB = nodes.get('emissiveRGB')
+        emissiveMix = nodes.get('emissiveMix')
+        emissiveFactor = nodes.get('emissiveFactor')
+        normalIMG = nodes.get('normalIMG')
+        normalFactor = nodes.get('normalFactor')
+        NormalMap = nodes.get('NormalMap')
+        color = i.get('color')
+        map = i.get('map')
+        metalness = i.get('metalness')
+        metalnessMap = i.get('metalnessMap')
+        roughness = i.get('roughness')
+        roughnessMap = i.get('roughnessMap')
+        ior = i.get('ior')
+        transmission = i.get('transmission')
+        emissive = i.get('emissive')
+        emissiveIntensity = i.get('emissiveIntensity')
+        emissiveMap = i.get('emissiveMap')
+        normalMap = i.get('normalMap')
+        Basecolor(color, map, baseColorIMG, baseColorRGB, baseColorMix, links, BSDF)
+        Metallic(metalness, metalnessMap, metallicIMG, metallicFactor, metallicMix, links, BSDF)
+        Roughness(roughness, roughnessMap, roughnessIMG, roughnessFactor, roughnessMix, links, BSDF)
+        Transmission(ior, transmission, iorFactor, transmissionFactor, links, BSDF)
+        Emission(emissive, emissiveIntensity, emissiveMap, emissiveIMG, emissiveRGB, emissiveFactor, emissiveMix, links,
+                 BSDF)
+        Normal(normalMap, normalIMG, links, BSDF)
 
 
 def update_output(of, pixel):
@@ -345,21 +469,23 @@ try:
     camera_option = args.camera_option
 
     for i in camera_option:
-        temp_l = tuple(i["location"])
-        i['location'] = (float(temp_l[0]), -float(temp_l[2]), float(temp_l[1]))
+        pass
+        # temp_l = tuple(i["location"])
+        # i['location'] = (float(temp_l[0]), -float(temp_l[2]), float(temp_l[1]))
         # temp_r = tuple(i["rotate"])
         # i["rotate"] = (float(temp_r[0]), -float(temp_r[2]), float(temp_r[1]))
 
     material_option = args.material_option
-
     of = args.output_format
     product = args.product
-    add_product(product)
+    add_product_new(product)
     update_transform(location, scale, rotation_euler)
     update_camera(camera_option)
     update_material(material_option)
     update_output(of, pixel)
 except Exception as e:
+    # import traceback
+    # traceback.print_exc(file=sys.stdout)
     line = e.__traceback__.tb_lineno
     print('python 脚本异常 行号 {} 异常消息 {}'.format(line, str(e)))
     sys.exit(1)
