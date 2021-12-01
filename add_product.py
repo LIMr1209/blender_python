@@ -240,7 +240,10 @@ def update_camera(camera_option):
             # euler = matrix.to_euler('XYZ')
             # camera.rotation_mode = "XYZ"
             # camera.rotation_euler = euler
-            # 新方法
+            # 新方法 旋转转换
+            # "x":(tmp_rotation.x*180/Math.PI + 90).toFixed(3),
+            # "y":(tmp_rotation.z*180/Math.PI).toFixed(3),
+            # "z":(tmp_rotation.y*180/Math.PI).toFixed(3)
             camera.rotation_mode = "YXZ"
             camera.rotation_euler = camera_option[i]["rotate"]
 
