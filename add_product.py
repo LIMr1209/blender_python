@@ -4,6 +4,7 @@ import bpy
 import math
 from mathutils import Vector, Matrix, Euler
 import json
+import re
 
 
 def get_frame_camera(frame):
@@ -165,19 +166,15 @@ def add_product_new(model_path):
     remove_empty()
     # 清除动画
     model = bpy.context.selected_objects[:]
+    rex = re.compile('\.\d+$')
     for i in model:
+        # 去除小数点
         old_name = i.name
-        index = old_name.rfind('.')
-        if index != -1:
-            for z in old_name[index + 1:]:
-                if not z.isdigit():
-                    need = False
-                    break
-            else:
-                need = True
-            if need:
-                new_name = old_name[:index] + old_name[index + 1:]
-                i.name = new_name
+        group = rex.search(old_name)
+        if group:
+            index = group.span()[0]
+            new_name = old_name[:index]+old_name[index+1:]
+            i.name = new_name
         i.animation_data_clear()
     # 建立空的父对象 对父对象进行 变换
     bpy.ops.object.empty_add(
@@ -271,10 +268,10 @@ def Basecolor(color, map, baseColorIMG, baseColorRGB, baseColorMix, links, BSDF)
     if map:
         baseColorIMG.image = bpy.data.images.load(map)
         baseColorRGB.outputs[0].default_value = (hex2rgb(color))
-        links.new(baseColorMix.outputs[0], BSDF.inputs[0])
+        links.new(baseColorMix.outputs[0], BSDF.inputs['Base Color'])
     else:
         baseColorRGB.outputs[0].default_value = (hex2rgb(color))
-        links.new(baseColorRGB.outputs[0], BSDF.inputs[0])
+        links.new(baseColorRGB.outputs[0], BSDF.inputs['Base Color'])
 
 
 # 金属度
@@ -283,10 +280,10 @@ def Metallic(metalness, metalnessMap, metallicIMG, metallicFactor, metallicMix, 
         metallicIMG.image = bpy.data.images.load(metalnessMap)
         metallicIMG.image.colorspace_settings.name = 'Non-Color'
         metallicFactor.outputs[0].default_value = 1
-        links.new(metallicMix.outputs[0], BSDF.inputs[4])
+        links.new(metallicMix.outputs[0], BSDF.inputs['Metallic'])
     else:
         metallicFactor.outputs[0].default_value = metalness
-        links.new(metallicFactor.outputs[0], BSDF.inputs[4])
+        links.new(metallicFactor.outputs[0], BSDF.inputs['Metallic'])
 
 
 # 粗糙度
@@ -295,18 +292,28 @@ def Roughness(roughness, roughnessMap, roughnessIMG, roughnessFactor, roughnessM
         roughnessIMG.image = bpy.data.images.load(roughnessMap)
         roughnessIMG.image.colorspace_settings.name = 'Non-Color'
         roughnessFactor.outputs[0].default_value = 1
-        links.new(roughnessMix.outputs[0], BSDF.inputs[7])
+        links.new(roughnessMix.outputs[0], BSDF.inputs['Roughness'])
     else:
         roughnessFactor.outputs[0].default_value = roughness
-        links.new(roughnessFactor.outputs[0], BSDF.inputs[7])
+        links.new(roughnessFactor.outputs[0], BSDF.inputs['Roughness'])
 
 
 # 透射率
-def Transmission(ior, transmission, iorFactor, transmissionFactor, links, BSDF):
+# def Transmission(ior, transmission, iorFactor, transmissionFactor, links, BSDF):
+#     iorFactor.outputs[0].default_value = ior
+#     transmissionFactor.outputs[0].default_value = transmission
+#     links.new(iorFactor.outputs[0], BSDF.inputs[14])
+#     links.new(transmissionFactor.outputs[0], BSDF.inputs[15])
+
+# 透射率
+def Transmission(ior, transmission, iorFactor, transmissionFactor, transMix, matOutput, links, BSDF):
     iorFactor.outputs[0].default_value = ior
     transmissionFactor.outputs[0].default_value = transmission
-    links.new(iorFactor.outputs[0], BSDF.inputs[14])
-    links.new(transmissionFactor.outputs[0], BSDF.inputs[15])
+    links.new(iorFactor.outputs[0], BSDF.inputs['IOR'])
+    links.new(transmissionFactor.outputs[0], BSDF.inputs['Transmission'])
+    if transmission != 0:
+        links.new(BSDF.outputs[0], transMix.inputs[1])
+        links.new(transMix.outputs[0], matOutput.inputs[0])
 
 
 # 发光
@@ -316,21 +323,21 @@ def Emission(emissive, emissiveIntensity, emissiveMap, emissiveIMG, emissiveRGB,
         emissiveIMG.image = bpy.data.images.load(emissiveMap)
         emissiveRGB.outputs[0].default_value = (1, 1, 1, 1)
         emissiveFactor.outputs[0].default_value = emissiveIntensity
-        links.new(emissiveMix.outputs[0], BSDF.inputs[17])
-        links.new(emissiveFactor.outputs[0], BSDF.inputs[18])
+        links.new(emissiveMix.outputs[0], BSDF.inputs['Emission'])
+        links.new(emissiveFactor.outputs[0], BSDF.inputs['Emission Strength'])
     else:
         emissiveRGB.outputs[0].default_value = (hex2rgb(emissive))
         emissiveFactor.outputs[0].default_value = emissiveIntensity
-        links.new(emissiveRGB.outputs[0], BSDF.inputs[17])
-        links.new(emissiveFactor.outputs[0], BSDF.inputs[18])
+        links.new(emissiveRGB.outputs[0], BSDF.inputs['Emission'])
+        links.new(emissiveFactor.outputs[0], BSDF.inputs['Emission Strength'])
 
 
 # 法线/凹凸
-def Normal(normalMap, normalIMG, links, BSDF):
+def Normal(normalMap, NormalMap, normalIMG, links, BSDF):
     if normalMap:
         normalIMG.image = bpy.data.images.load(normalMap)
         normalIMG.image.colorspace_settings.name = 'Non-Color'
-        links.new(normalMap.outputs[0], BSDF.inputs[20])
+        links.new(NormalMap.outputs[0], BSDF.inputs['Normal'])
 
 
 def update_material(material_option):
@@ -365,6 +372,9 @@ def update_material(material_option):
         normalIMG = nodes.get('normalIMG')
         normalFactor = nodes.get('normalFactor')
         NormalMap = nodes.get('NormalMap')
+        transBSDF = nodes.get('transBSDF')
+        transMix = nodes.get('transMix')
+        matOutput = nodes.get('matOutput')
         color = i.get('color')
         map = i.get('map')
         metalness = i.get('metalness')
@@ -380,10 +390,10 @@ def update_material(material_option):
         Basecolor(color, map, baseColorIMG, baseColorRGB, baseColorMix, links, BSDF)
         Metallic(metalness, metalnessMap, metallicIMG, metallicFactor, metallicMix, links, BSDF)
         Roughness(roughness, roughnessMap, roughnessIMG, roughnessFactor, roughnessMix, links, BSDF)
-        Transmission(ior, transmission, iorFactor, transmissionFactor, links, BSDF)
+        Transmission(ior, transmission, iorFactor, transmissionFactor, transMix, matOutput, links, BSDF)
         Emission(emissive, emissiveIntensity, emissiveMap, emissiveIMG, emissiveRGB, emissiveFactor, emissiveMix, links,
                  BSDF)
-        Normal(normalMap, normalIMG, links, BSDF)
+        Normal(normalMap, NormalMap, normalIMG, links, BSDF)
 
 
 def update_output(of, pixel):
