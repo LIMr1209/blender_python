@@ -333,11 +333,31 @@ shader.inputs['Clearcoat Normal'].default_value  # 清漆法线
 shader.inputs['Tangent'].default_value  # 切向（正切）
 
 image_node = nodes.new(type='ShaderNodeTexImage')  # 图片节点
-bpy.ops.image.open(filepath=r'C:\Users\thn\Desktop\Wood068_4K_NormalGL.jpg')  # 添加图片数据
-image = bpy.data.images['Wood068_4K_NormalGL.jpg']
+bpy.data.images.load('PATH_TO_FILE') # 添加图片数据
+bpy.ops.image.open(filepath='PATH_TO_FILE')  # 添加图片数据
+image = bpy.data.images['FILE_NAME.jpg']
 image_node.image = image  # 图片节点关联图片
 links.new(image_node.outputs[0], shader.inputs[0])
 # shader.inputs['Base Color'].links[0].from_node -->image_node
+# https://docs.blender.org/api/current/bpy.types.ImageUser.html#bpy.types.ImageUser
+# https://docs.blender.org/api/current/bpy.types.ShaderNodeTexImage.html
+image_node.image_user.frame_duration # 帧
+image_node.image_user.frame_start # 起始帧
+image_node.image_user.frame_offset # 偏移量
+image_node.image_user.use_cyclic  # 循环
+image_node.image_user.use_auto_refresh # 自动刷新
+image_node.extension # REPEAT 重复，使图像水平和垂直重复。EXTEND 扩展，通过重复图像的边缘像素来扩展。CLIP 剪辑，剪辑到图像大小并将外部像素设置为透明。
+image_node.interpolation # Linear 线性，线性插值。Closest 最接近，无插值（采样最接近的纹素）。Cubic 三次，三次插值。Smart 放大时为智能、双三次，否则为双线性（仅限 OSL）。
+image_node.projection  # FLAT 平面，图像使用纹理矢量的 X 和 Y 坐标平面投影。BOX Box, Image 使用不同的组件为对象空间边界框的每一侧投影。SPHERE 球体，图像以 Z 轴为中心进行球面投影。TUBE 管，图像以 Z 轴为中心从管中投影出来。
+image_node.image.source = 'SEQUENCE'
+"""
+FILE 单个图像，单个图像文件。
+SEQUENCE 图像序列，多个图像文件，作为一个序列。
+MOVIE 电影，电影文件。
+GENERATED 生成，生成图像。
+VIEWER 查看器，合成节点查看器。
+TILED UDIM Tiles, Tiled UDIM 图像纹理。
+"""
 # 图片节点 链接 原理化BSDF base color
 '''
 ShaderNode(NodeInternal)
