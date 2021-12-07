@@ -280,6 +280,7 @@ ob.rotation_euler = rot_XYZ
 mat = bpy.context.object.active_material  # 返回物体激活的材质
 if not mat:
     mat = bpy.data.materials.new(name='Material')  # 创建材质
+    mat.use_nodes = True # 使用节点
     bpy.context.object.active_material = mat  # 设置物体激活的材质
 
 # 清空材质信息
@@ -332,6 +333,7 @@ shader.inputs['Normal'].default_value  # 法向
 shader.inputs['Clearcoat Normal'].default_value  # 清漆法线
 shader.inputs['Tangent'].default_value  # 切向（正切）
 
+mat.blend_method = 'BLEND'  # 材质面板 视图显示 设置 混合模式 Alpha 混合
 image_node = nodes.new(type='ShaderNodeTexImage')  # 图片节点
 bpy.data.images.load('PATH_TO_FILE') # 添加图片数据
 bpy.ops.image.open(filepath='PATH_TO_FILE')  # 添加图片数据
@@ -495,6 +497,8 @@ for obj in model:
 bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_collection.children['Product']
 bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
 bpy.context.object.name = "ProductContainer"
+
+bpy.context.object.dimensions # 对象尺寸
 
 # 移动对象到 集合  不建议使用
 # https://devtalk.blender.org/t/where-to-find-collection-index-for-moving-an-object/3289

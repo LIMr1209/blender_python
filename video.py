@@ -2,8 +2,8 @@ import os
 
 os.environ['FFMPEG_BINARY'] = 'auto-detect'  # 使用系统 ffmpeg
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
-import av
 import cv2
+import ffmpeg
 from moviepy.video.io.ffmpeg_writer import ffmpeg_write_video
 
 
@@ -37,33 +37,20 @@ def merge_image_to_video_moviepy(folder_name):
     # clip.write_videofile("output3.mov", fps=fps, codec="qtrle", threads=4)
 
 
-def merge_image_to_video_av(folder_name):
-    images = []
-    for f1 in os.listdir(folder_name):
-        filename = os.path.join(folder_name, f1)
-        i = cv2.imread(filename)
-        images.append(i)
-
-    output = av.open('output_av.mp4', 'w')
-    stream = output.add_stream('png', '23.976')
-    stream.bit_rate = 8000000
-
-    for i, img in enumerate(images):
-        frame = av.VideoFrame.from_ndarray(img, format='bgra')
-        packet = stream.encode(frame)
-        output.mux(packet)
-
-    # flush
-    packet = stream.encode(None)
-    output.mux(packet)
-
-    output.close()
+def merge_image_to_video_ffmpeg(folder_name):
+    folder_name = os.path.join(folder_name, '*.png')
+    (
+        ffmpeg
+            .input(folder_name, pattern_type='glob', framerate=30)
+            .output('movie.mp4', format='image2', vcodec='png')
+            .run()
+    )
 
 
 if __name__ == '__main__':
     # 要求文件夹中的文件尺寸必须一致，否则必须统一
     folder_name = r"C:\Users\thn\Desktop\output_copy"
     merge_image_to_video_moviepy(folder_name)
-    # merge_image_to_video_av(folder_name)
+    # merge_image_to_video_ffmpeg(folder_name)
 
 # ffmpeg -y -loglevel error -f rawvideo -vcodec rawvideo -s 1920x1080 -pix_fmt rgba -r 30.00 -an -i - -vcodec png -preset medium -threads 4 output3.mp4
