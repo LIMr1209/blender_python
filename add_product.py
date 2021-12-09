@@ -168,12 +168,12 @@ def add_product_new(model_path):
     model = bpy.context.selected_objects[:]
     rex = re.compile('\.\d+$')
     for i in model:
-        # 去除小数点
+        # 去除小数点 适配 three js 命名规范
         old_name = i.name
         group = rex.search(old_name)
         if group:
             index = group.span()[0]
-            new_name = old_name[:index]+old_name[index+1:]
+            new_name = old_name[:index] + old_name[index + 1:]
             i.name = new_name
         i.animation_data_clear()
     # 建立空的父对象 对父对象进行 变换
@@ -185,6 +185,20 @@ def add_product_new(model_path):
     for i in model:
         if not i.parent:
             i.parent = pdc
+
+    # 分离顶点组 适配 three js 命名规范
+    for i in model:
+        if i.type == 'MESH':
+            bpy.ops.object.select_all(action='DESELECT')
+            i.select_set(True)
+            bpy.context.view_layer.objects.active = i
+            old_name = i.name
+            bpy.ops.mesh.separate(type="MATERIAL")  # 按材质分离
+            separate_models = bpy.context.selected_objects[:]
+            separate_models = list(reversed(separate_models))
+            if len(separate_models) > 1:
+                for z, y in enumerate(separate_models):
+                    y.name = old_name + "_%s" % str(z + 1)
 
 
 def update_transform(location, scale, rotation_euler):
