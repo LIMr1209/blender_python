@@ -239,14 +239,42 @@ bpy.data.objects['Camera'].data.sensor_width = 36  # 传感器 适配尺寸 mm �
 bpy.data.objects['Camera'].data.sensor_height = 50  # 传感器 适配尺寸 mm 高度
 
 # 添加标准跟随约束
-target_obj = bpy.data.objects['Cube']
-camera_obj = bpy.data.objects['Camera']
-
+bpy.ops.object.empty_add(
+    type="PLAIN_AXES", align="WORLD", location=(0, 0, 0), scale=(1, 1, 1)
+)
+bpy.context.object.name = 'cameraController'
+cameraController = bpy.data.objects['cameraController']
+camera_obj = bpy.data.objects['vidCamera']
+camera_obj.parent = cameraController
+f_obj = bpy.data.objects['F']
+anima_path_obj = bpy.data.objects['animaPath']  # 曲线对象
+anima_path_obj.parent = cameraController
+# 标准跟随约束
 constraint = camera_obj.constraints.new(type='TRACK_TO')
-constraint.target = target_obj
-# 移动目标物体， camera_obj 应用可视变换,更新变换信息
-bpy.ops.object.visual_transform_apply()  # 应用可视变换（将实际的坐标给到坐标属性值）
-camera_obj.constraints.remove(constraint)  # 删除约束
+# constraint.enabled = True  # 开启 默认开启
+constraint.target = f_obj
+constraint.track_axis = 'TRACK_NEGATIVE_Z'  # 跟随轴 -z  TRACK_Z  z
+constraint.up_axis = 'UP_Y'  # 向上 Y
+constraint.target_space = 'WORLD'  # 目标 世界空间
+constraint.owner_space = 'WORLD'  # 拥有者空间
+
+# 移动目标物体， cameraController 应用可视变换,更新变换信息
+# bpy.ops.object.visual_transform_apply()  # 应用可视变换（将实际的坐标给到坐标属性值）
+# camera_obj.constraints.remove(constraint)  # 删除约束
+
+# 跟随路径约束
+constraint = camera_obj.constraints.new(type='FOLLOW_PATH')
+# constraint.enabled = True  # 开启 默认开启
+constraint.target = anima_path_obj
+constraint.forward_axis = 'FORWARD_Y'  # 前进轴 Y
+constraint.up_axis = 'UP_Z'  # 向上Z
+constraint.use_fixed_location = True  # 跟随位置
+constraint.use_curve_radius = False  # 曲线半径
+constraint.use_curve_follow = False  # 跟随曲线
+constraint.offset_factor = 0  # 偏移系数
+constraint.keyframe_insert(data_path='offset_factor', frame=30)  # 插入关键帧 data_path 键属性的路径  这里是 偏移系数  frame 帧
+constraint.offset_factor = 1  # 偏移系数
+constraint.keyframe_insert(data_path="offset_factor", frame=120)
 
 
 # 获取帧绑定的相机标记
@@ -280,7 +308,7 @@ ob.rotation_euler = rot_XYZ
 mat = bpy.context.object.active_material  # 返回物体激活的材质
 if not mat:
     mat = bpy.data.materials.new(name='Material')  # 创建材质
-    mat.use_nodes = True # 使用节点
+    mat.use_nodes = True  # 使用节点
     bpy.context.object.active_material = mat  # 设置物体激活的材质
 
 # 清空材质信息
@@ -335,7 +363,7 @@ shader.inputs['Tangent'].default_value  # 切向（正切）
 
 mat.blend_method = 'BLEND'  # 材质面板 视图显示 设置 混合模式 Alpha 混合
 image_node = nodes.new(type='ShaderNodeTexImage')  # 图片节点
-bpy.data.images.load('PATH_TO_FILE') # 添加图片数据
+bpy.data.images.load('PATH_TO_FILE')  # 添加图片数据
 bpy.ops.image.open(filepath='PATH_TO_FILE')  # 添加图片数据
 image = bpy.data.images['FILE_NAME.jpg']
 image_node.image = image  # 图片节点关联图片
@@ -343,13 +371,13 @@ links.new(image_node.outputs[0], shader.inputs[0])
 # shader.inputs['Base Color'].links[0].from_node -->image_node
 # https://docs.blender.org/api/current/bpy.types.ImageUser.html#bpy.types.ImageUser
 # https://docs.blender.org/api/current/bpy.types.ShaderNodeTexImage.html
-image_node.image_user.frame_duration # 帧
-image_node.image_user.frame_start # 起始帧
-image_node.image_user.frame_offset # 偏移量
+image_node.image_user.frame_duration  # 帧
+image_node.image_user.frame_start  # 起始帧
+image_node.image_user.frame_offset  # 偏移量
 image_node.image_user.use_cyclic  # 循环
-image_node.image_user.use_auto_refresh # 自动刷新
-image_node.extension # REPEAT 重复，使图像水平和垂直重复。EXTEND 扩展，通过重复图像的边缘像素来扩展。CLIP 剪辑，剪辑到图像大小并将外部像素设置为透明。
-image_node.interpolation # Linear 线性，线性插值。Closest 最接近，无插值（采样最接近的纹素）。Cubic 三次，三次插值。Smart 放大时为智能、双三次，否则为双线性（仅限 OSL）。
+image_node.image_user.use_auto_refresh  # 自动刷新
+image_node.extension  # REPEAT 重复，使图像水平和垂直重复。EXTEND 扩展，通过重复图像的边缘像素来扩展。CLIP 剪辑，剪辑到图像大小并将外部像素设置为透明。
+image_node.interpolation  # Linear 线性，线性插值。Closest 最接近，无插值（采样最接近的纹素）。Cubic 三次，三次插值。Smart 放大时为智能、双三次，否则为双线性（仅限 OSL）。
 image_node.projection  # FLAT 平面，图像使用纹理矢量的 X 和 Y 坐标平面投影。BOX Box, Image 使用不同的组件为对象空间边界框的每一侧投影。SPHERE 球体，图像以 Z 轴为中心进行球面投影。TUBE 管，图像以 Z 轴为中心从管中投影出来。
 image_node.image.source = 'SEQUENCE'
 """
@@ -498,7 +526,7 @@ bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_co
 bpy.ops.object.empty_add(type='PLAIN_AXES', align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
 bpy.context.object.name = "ProductContainer"
 
-bpy.context.object.dimensions # 对象尺寸
+bpy.context.object.dimensions  # 对象尺寸
 
 # 移动对象到 集合  不建议使用
 # https://devtalk.blender.org/t/where-to-find-collection-index-for-moving-an-object/3289
