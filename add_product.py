@@ -175,6 +175,7 @@ def add_product_new(model_path):
             index = group.span()[0]
             new_name = old_name[:index] + old_name[index + 1:]
             i.name = new_name
+        i.name = i.name.replace(' - ', '_-_')
         i.animation_data_clear()
     # 建立空的父对象 对父对象进行 变换
     bpy.ops.object.empty_add(
@@ -365,7 +366,15 @@ def update_material(material_option):
     """
     for j, i in enumerate(material_option):
         mat_template = bpy.data.materials['StandardMaterial']
-        obj = bpy.data.objects[i.pop('name')]
+        name = i['name']
+        try:
+            obj = bpy.data.objects[name]
+        except:
+            try:
+                new_name = name.capitalize()
+                obj = bpy.data.objects[new_name]
+            except:
+                continue
         mat = mat_template.copy()
         obj.active_material = mat
         nodes = mat.node_tree.nodes

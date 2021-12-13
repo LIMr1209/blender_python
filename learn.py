@@ -195,7 +195,7 @@ bpy.context.scene.cycles.samples = 256  # 采样数量
 # 渲染相关
 bpy.context.scene.frame_set(200)  # 指定关键帧渲染图片
 bpy.data.scenes["Scene"].render.image_settings.file_format = 'PNG'  # 渲染保存文件格式
-bpy.data.scenes["Scene"].render.filepath = ''  # 保存文件路径
+bpy.data.scenes["Scene"].render.filepath = 'test/200test.png'  # 保存文件路径
 bpy.ops.render.render(write_still=True)  # 渲染保存
 
 # 制作动画
