@@ -6,6 +6,13 @@ from mathutils import Vector, Matrix, Euler
 import json
 import re
 
+def rename_scene_object():
+    """
+    统一更改场景 对象名字 防止产品模型导入和原对象重复
+    """
+    objs = bpy.data.objects[:]
+    for i in objs:
+        i.name = 'scene.' + i.name
 
 def get_frame_camera(frame):
     """
@@ -159,23 +166,32 @@ def add_product_new(model_path):
     :param model_path: 产品模型路径
     :return:
     """
-
-    bpy.ops.import_scene.gltf(filepath=model_path)
-
+    # 为啥 threejs 导入obj 不会拆分顶点  导入glb 就会拆 命名规范也不一样，glb 会把后面得小数点去掉，obj 就不会。。。
+    rename_scene_object()
+    if model_path.endswith('.glb') or model_path.endswith('.gltf'):
+        file_kind = 'glb'
+        bpy.ops.import_scene.gltf(filepath=model_path)
+    elif model_path.endswith('.obj'):
+        file_kind = 'obj'
+        bpy.ops.import_scene.obj(filepath=model_path)
+    else:
+        raise Exception("不支持得产品模型格式")
     # 删除空对象
     remove_empty()
     # 清除动画
     model = bpy.context.selected_objects[:]
     rex = re.compile('\.\d+$')
     for i in model:
-        # 去除小数点 适配 three js 命名规范
-        old_name = i.name
-        group = rex.search(old_name)
-        if group:
-            index = group.span()[0]
-            new_name = old_name[:index] + old_name[index + 1:]
-            i.name = new_name
-        i.name = i.name.replace(' - ', '_-_')
+        if file_kind == 'glb':
+            # 去除小数点
+            old_name = i.name
+            group = rex.search(old_name)
+            if group:
+                index = group.span()[0]
+                new_name = old_name[:index] + old_name[index + 1:]
+                i.name = new_name
+            i.name = i.name.replace(' - ', '_-_')
+        # 去除动画
         i.animation_data_clear()
     # 建立空的父对象 对父对象进行 变换
     bpy.ops.object.empty_add(
@@ -188,18 +204,19 @@ def add_product_new(model_path):
             i.parent = pdc
 
     # 分离顶点组 适配 three js 命名规范
-    for i in model:
-        if i.type == 'MESH':
-            bpy.ops.object.select_all(action='DESELECT')
-            i.select_set(True)
-            bpy.context.view_layer.objects.active = i
-            old_name = i.name
-            bpy.ops.mesh.separate(type="MATERIAL")  # 按材质分离
-            separate_models = bpy.context.selected_objects[:]
-            separate_models = list(reversed(separate_models))
-            if len(separate_models) > 1:
-                for z, y in enumerate(separate_models):
-                    y.name = old_name + "_%s" % str(z + 1)
+    if file_kind == 'glb':
+        for i in model:
+            if i.type == 'MESH':
+                bpy.ops.object.select_all(action='DESELECT')
+                i.select_set(True)
+                bpy.context.view_layer.objects.active = i
+                old_name = i.name
+                bpy.ops.mesh.separate(type="MATERIAL")  # 按材质分离
+                separate_models = bpy.context.selected_objects[:]
+                separate_models = list(reversed(separate_models))
+                if len(separate_models) > 1:
+                    for z, y in enumerate(separate_models):
+                        y.name = old_name + "_%s" % str(z + 1)
 
 
 def update_transform(location, scale, rotation_euler):
