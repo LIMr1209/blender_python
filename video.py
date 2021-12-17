@@ -33,8 +33,9 @@ def merge_image_to_video_moviepy(folder_name):
         i = cv2.imread(filename, -1)  # RGBA 通道
         image_files.append(i)
     clip = ImageSequenceClip(image_files, fps=fps)
-    ffmpeg_write_video(clip, "output3.mp4", fps=fps, codec="png", threads=4)
-    # clip.write_videofile("output3.mov", fps=fps, codec="qtrle", threads=4)
+    # ffmpeg_write_video(clip, "output.mp4", fps=fps, codec="png", threads=4)
+    ffmpeg_write_video(clip, "output.mov", fps=fps, codec="prores", threads=4)
+    # ffmpeg_write_video(clip, "output.mov", fps=fps, codec="dnxhd", threads=4)
 
 
 def merge_image_to_video_ffmpeg(folder_name):
