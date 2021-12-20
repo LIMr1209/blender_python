@@ -552,9 +552,10 @@ bpy.ops.object.move_to_collection(collection_index=9)  # collection_index 集合
 # https://blender.stackexchange.com/questions/34540/how-to-link-append-a-data-block-using-the-python-api
 # 从另一个blend 文件中添加数据块
 
-filepath = "C:/Users/ME/Downloads/78-gold.blend"
+filepath = r'C:\Users\thn\Desktop\新建文件夹\scene\BG36.blend'
 with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to):
-    data_to.materials = ["Gold"]  # 添加 78-gold.blend Gold 材质数据块
+    data_to.materials = ['StandardMaterial']  # 添加 BG36.blend StandardMaterial 材质数据块
+bpy.ops.wm.save_mainfile(filepath='')  # 保存 blender
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
