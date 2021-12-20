@@ -220,12 +220,14 @@ bpy.data.scenes["Scene"].render.ffmpeg.constant_rate_factor = 'HIGH'
 bpy.data.scenes["Scene"].render.ffmpeg.format = 'MPEG4'
 
 # https://blender.stackexchange.com/questions/63834/how-to-add-sound-to-sequencer-using-python
-bpy.context.scene.render.ffmpeg.audio_codec = 'MP3' # 音频
+bpy.context.scene.render.ffmpeg.audio_codec = 'MP3'  # 音频
 if not bpy.context.scene.sequence_editor:
     bpy.context.scene.sequence_editor_create()
 
-bpy.context.scene.sequence_editor.sequences.new_sound("audio.mp3", filepath=r'C:\\Users\\thn\\Desktop\\sources\\audio1.mp3', channel=3, frame_start=1)
-#Sequences.new_sound(name, filepath, channel, frame_start)
+bpy.context.scene.sequence_editor.sequences.new_sound("audio.mp3",
+                                                      filepath=r'C:\\Users\\thn\\Desktop\\sources\\audio1.mp3',
+                                                      channel=3, frame_start=1)
+# Sequences.new_sound(name, filepath, channel, frame_start)
 bpy.ops.render.render(animation=True)  # 渲染保存
 
 # 添加相机
@@ -310,6 +312,10 @@ rot_XYZ = rot_mat.to_euler('XYZ')
 
 ob.rotation_mode = 'XYZ'
 ob.rotation_euler = rot_XYZ
+
+# 选中物体， 所有面使用材质的集合
+used_mats = set(bpy.context.object.material_slots[f.material_index].material
+                for f in bpy.context.object.data.polygons)
 
 # 材质
 # https://vividfax.github.io/2021/01/14/blender-materials.html
