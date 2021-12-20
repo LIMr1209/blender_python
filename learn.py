@@ -317,6 +317,9 @@ ob.rotation_euler = rot_XYZ
 used_mats = set(bpy.context.object.material_slots[f.material_index].material
                 for f in bpy.context.object.data.polygons)
 
+# 清楚孤立数据块
+bpy.ops.outliner.orphans_purge()  # {'FINISHED'} 清理成功 {'CANCELLED'} 清理失败
+
 # 材质
 # https://vividfax.github.io/2021/01/14/blender-materials.html
 mat = bpy.context.object.active_material  # 返回物体激活的材质
@@ -545,6 +548,13 @@ bpy.context.object.dimensions  # 对象尺寸
 # 移动对象到 集合  不建议使用
 # https://devtalk.blender.org/t/where-to-find-collection-index-for-moving-an-object/3289
 bpy.ops.object.move_to_collection(collection_index=9)  # collection_index 集合索引
+
+# https://blender.stackexchange.com/questions/34540/how-to-link-append-a-data-block-using-the-python-api
+# 从另一个blend 文件中添加数据块
+
+filepath = "C:/Users/ME/Downloads/78-gold.blend"
+with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to):
+    data_to.materials = ["Gold"]  # 添加 78-gold.blend Gold 材质数据块
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
