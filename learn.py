@@ -138,7 +138,9 @@ bpy.ops.import_scene.x3d(filepath='')  # x3d
 bpy.ops.import_scene.fbx(filepath='')  # fbx
 
 # 保存blender
-bpy.ops.wm.save_mainfile(filepath='')
+bpy.ops.wm.save_mainfile()
+# 另存为
+bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath) # 另存为当前文件
 # 打开blender
 bpy.ops.wm.open_mainfile(filepath='')
 # 追加blender文件内对象

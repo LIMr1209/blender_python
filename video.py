@@ -33,25 +33,26 @@ def merge_image_to_video_moviepy(folder_name):
         i = cv2.imread(filename, -1)  # RGBA 通道
         image_files.append(i)
     clip = ImageSequenceClip(image_files, fps=fps)
-    # ffmpeg_write_video(clip, "output.mp4", fps=fps, codec="png", threads=4)
     ffmpeg_write_video(clip, "output.mov", fps=fps, codec="prores", threads=4)
-    # ffmpeg_write_video(clip, "output.mov", fps=fps, codec="dnxhd", threads=4)
 
 
 def merge_image_to_video_ffmpeg(folder_name):
-    folder_name = os.path.join(folder_name, '*.png')
-    (
-        ffmpeg
-            .input(folder_name, pattern_type='glob', framerate=30)
-            .output('movie.mp4', format='image2', vcodec='png')
-            .run()
-    )
+    folder_name = os.path.join(folder_name, '%04d.png')
+    try:
+        (
+            ffmpeg
+                .input(folder_name, framerate=30)
+                .output('movie.mp4', format='image2', vcodec='prores_ks', pix_fmt='yuva444p10le')
+                .run()
+        )
+    except ffmpeg._run.Error as e:
+        print(e.stderr.decode('utf-8'))
 
 
 if __name__ == '__main__':
     # 要求文件夹中的文件尺寸必须一致，否则必须统一
-    folder_name = r"C:\Users\thn\Desktop\output_copy"
-    merge_image_to_video_moviepy(folder_name)
-    # merge_image_to_video_ffmpeg(folder_name)
+    folder_name = r"C:\Users\thn\Desktop\video"
+    # merge_image_to_video_moviepy(folder_name)
+    merge_image_to_video_ffmpeg(folder_name)
 
 # ffmpeg -y -loglevel error -f rawvideo -vcodec rawvideo -s 1920x1080 -pix_fmt rgba -r 30.00 -an -i - -vcodec png -preset medium -threads 4 output3.mp4
