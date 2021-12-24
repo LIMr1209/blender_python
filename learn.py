@@ -162,8 +162,8 @@ bpy.ops.script.python_file_run(filepath='')
 # 用户设置cycles 渲染引擎开启使用CUDA
 bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
 
-# 检测 CUDA 和 OpenCL 设备：
-cuda_devices, opencl_devices = bpy.context.preferences.addons['cycles'].preferences.get_devices()
+# 检测 CUDA 和 OpenCL 设备 需要先检测
+bpy.context.preferences.addons['cycles'].preferences.get_devices()
 # 为 CUDA 启用所需的设备
 bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'
 for device in bpy.context.preferences.addons['cycles'].preferences.devices:
@@ -182,6 +182,17 @@ bpy.context.preferences.addons["cycles"].preferences.compute_device_type
 
 # 并且具体场景渲染选项cycles 渲染设备选择GPU
 bpy.context.scene.cycles.device = "GPU"
+
+bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'OPTIX'
+bpy.context.preferences.addons["cycles"].preferences.get_devices()
+
+gpu_device = []
+for device in bpy.context.preferences.addons['cycles'].preferences.devices:
+    if device.type == 'OPTIX':
+        gpu_device.append(device)
+    device.use = False
+gpu_device[1].use = True
+
 
 bpy.ops.preferences.addon_enable(module='render_auto_tile_size')
 bpy.ops.preferences.addon_disable(module='render_auto_tile_size')
