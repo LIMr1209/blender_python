@@ -3,6 +3,9 @@
 -n
  不覆盖 立即退出
 
+-an
+ 去掉音频
+
 -loglevel
  日志级别
 
@@ -34,9 +37,37 @@
 
 
 --preset
-  参数主要调节编码速度和质量的平衡，有ultrafast、superfast、veryfast、faster、fast、medium、slow、slower、veryslow、placebo
   这10个选项，速度从快到慢。 文件大小从大到小
 
+    libx264 有10个选项
+
+    速度由快到慢，速度越慢，质量越好，压缩比越大；默认是medium。
+
+    ultrafast
+    superfast
+    veryfast
+    faster
+    fast
+    medium
+    slow
+    slower
+    veryslow
+    placebo
+    h264_nvenc 有11个选项
+
+    默认是medium。
+
+    slow
+    medium
+    fast
+    hp
+    hq
+    bd
+    ll
+    llhq
+    llhp
+    lossless
+    losslesshp
 
 -b
 指定比特率(bits/s)
