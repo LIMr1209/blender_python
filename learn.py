@@ -570,6 +570,19 @@ with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to):
     data_to.materials = ['StandardMaterial']  # 添加 BG36.blend StandardMaterial 材质数据块
 bpy.ops.wm.save_mainfile(filepath='')  # 保存 blender
 
+
+
+# 获取各顶点得坐标
+obj = bpy.context.active_object
+v = obj.data.vertices[0]
+coords = [(obj.matrix_world @ v.co) for v in obj.data.vertices]
+
+
+# 获取3d游标得位置
+bpy.context.scene.cursor.location
+# 设置object 原点为3d游标
+bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
 #
