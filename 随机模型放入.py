@@ -20,9 +20,12 @@ def get_pd_box(obj, pd_box_list):
     return pd_box_list
 
 
-for i in ['product', 'product.001']:
+for i in ['product.002']:
     # bpy.ops.object.transform_apply(rotation=True)
-    pd = bpy.data.objects[i]
+    try:
+        pd = bpy.data.objects[i]
+    except:
+        continue
     if pd.type != 'MESH':
         mark = 'group'
         pd_box_list = []
@@ -65,6 +68,8 @@ for i in ['product', 'product.001']:
                 break
         else:
             dimensions_disparity.append({'name': [lp], 'value': dimensions_disparity_lp})
+    if not dimensions_disparity:
+        continue
     dimensions_disparity.sort(key=lambda x: x['value'])
     lp_list = dimensions_disparity[0]['name']
     lp = random.choice(lp_list)
