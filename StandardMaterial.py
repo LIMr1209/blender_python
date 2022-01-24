@@ -1,5 +1,6 @@
 import bpy
 
+# applyMaterial.py 应用材质时需要创建的材质模板
 mat = bpy.data.materials.new("StandardMaterial")
 mat.use_nodes = True
 nodes = mat.node_tree.nodes
@@ -118,3 +119,8 @@ normal_map_node.name = 'NormalMap'
 normal_map_node.uv_map = 'UVMap'
 links.new(normal_factor_node.outputs['Value'], normal_map_node.inputs['Strength'])
 links.new(normal_img_node.outputs['Color'], normal_map_node.inputs['Color'])
+
+
+mat_output_node = nodes.get('Material Output')
+mat_output_node.label = 'matOutput'
+mat_output_node.name = 'matOutput'

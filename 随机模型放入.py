@@ -2,6 +2,7 @@ import bpy
 from mathutils import Vector
 import random
 
+# 定位块 更新 transform  矩阵没有立即更新  使用 bpy.context.view_layer.update() 更新矩阵 https://blender.stackexchange.com/questions/27667/incorrect-matrix-world-after-transformation
 lp = bpy.data.objects["location_001"]
 lp1 = bpy.data.objects["location_002"]
 lp2 = bpy.data.objects["location_003"]
