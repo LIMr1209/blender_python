@@ -3,6 +3,7 @@ from mathutils import Vector
 import bpy
 
 ele_obj = ['product', 'product.001', 'product.002']
+floor_obj = ['物件37', '物件28']
 
 max_iterations = 1000  # 最大循环
 loop_iterations = 0  # 当前循环
@@ -33,11 +34,7 @@ def get_pd_box(obj, pd_box_list):
     return pd_box_list
 
 
-for i in ele_obj:
-    try:
-        pd = bpy.data.objects[i]
-    except:
-        continue
+def get_box_list(pd):
     pd_box_list = []
     get_pd_box(pd, pd_box_list)
     max_x = max([v[0] for v in pd_box_list])
@@ -59,7 +56,17 @@ for i in ele_obj:
     pd_d_x = abs(pd_box[0][0] - pd_box[4][0])
     pd_d_y = abs(pd_box[0][1] - pd_box[2][1])
     pd_d_z = abs(pd_box[0][2] - pd_box[1][2])
-    all_obj.append({'name': pd, 'pd_box': pd_box, 'dimensions': [pd_d_x, pd_d_y, pd_d_z]})
+    dimensions = [pd_d_x, pd_d_y, pd_d_z]
+    return pd_box, dimensions
+
+
+for i in ele_obj:
+    try:
+        pd = bpy.data.objects[i]
+    except:
+        continue
+    pd_box, dimensions = get_box_list(pd)
+    all_obj.append({'name': pd, 'pd_box': pd_box, 'dimensions': dimensions})
 
 
 def overlap_interval(check_list):
@@ -73,7 +80,8 @@ def overlap_interval(check_list):
 
 
 def is_intersect(all_locations, dimensions, location):
-    flag = False
+    located_flag = False
+    obj_flag = False
     for i in all_locations:
         obj = bpy.data.objects[i]
         obj_x_range = [obj.location.x - obj.dimensions.x, obj.location.x + obj.dimensions.x]
@@ -86,20 +94,37 @@ def is_intersect(all_locations, dimensions, location):
         # o_z_range = [location[2] - dimensions[2], location[2] + dimensions[2]]
         # check_z = overlap_interval([obj_z_range, o_z_range])
         if check_x or check_y:
-            flag = True
+            located_flag = True
             break
-    return flag
+    for i in floor_obj:
+        try:
+            pd = bpy.data.objects[i]
+        except:
+            continue
+        pd_box, dimensions = get_box_list(pd)
+        obj_x_range = [pd_box[0][0], pd_box[4][0]]
+        o_x_range = [location[0] - dimensions[0], location[0] + dimensions[0]]
+        check_x = overlap_interval([obj_x_range, o_x_range])
+        obj_y_range = [pd_box[0][1], pd_box[2][1]]
+        o_y_range = [location[1] - dimensions[1], location[1] + dimensions[1]]
+        check_y = overlap_interval([obj_y_range, o_y_range])
+        if check_x or check_y:
+            obj_flag = True
+            break
+    return located_flag or obj_flag
 
 
 def generate_located(all_locations):
     global loop_iterations
     # while len(all_locations) < random_count:
     while len(all_locations) < random_count and loop_iterations < max_iterations:
+        data = all_obj[0]
+        pd = data['name']
+        obj_dimensions = data['dimensions']
         loop_iterations += 1
-        # dimensions_x = random.randint(0, x_limit)  # 随机 立方体 x 尺寸
-        # dimensions_y = random.randint(0, y_limit)  # 随机 立方体 y 尺寸
-        # dimensions_z = random.randint(0, z_limit)  # 随机 立方体 z 尺寸
-        dimensions_x = dimensions_y = dimensions_z = random.randint(1, x_limit)
+        dimensions_x = round(random.uniform(obj_dimensions[0], obj_dimensions[0] + 0.5), 4)  # 随机 立方体 x 尺寸
+        dimensions_y = round(random.uniform(obj_dimensions[1], obj_dimensions[1] + 0.5), 4)  # 随机 立方体 y 尺寸
+        dimensions_z = round(random.uniform(obj_dimensions[2], obj_dimensions[2] + 0.5), 4)  # 随机 立方体 z 尺寸
         location_x = round(
             random.uniform(random_x_l_range[0] + dimensions_x / 2, random_x_l_range[1] - dimensions_x / 2),
             4)
@@ -111,11 +136,30 @@ def generate_located(all_locations):
         location = [location_x, location_y, location_z]
         flag = is_intersect(all_locations, dimensions, location)
         if not flag:
-            bpy.ops.mesh.primitive_cube_add(location=(location_x, location_y, location_z), scale=(1, 1, 1))
-            bpy.context.object.dimensions = dimensions_x, dimensions_y, dimensions_z
             name = 'located_{}'.format(len(all_locations))
-            bpy.context.object.name = name
+            try:
+                lp = bpy.data.objects[name]
+                lp.location = location
+                lp.dimensions = dimensions
+                bpy.context.view_layer.update()
+            except:
+                bpy.ops.mesh.primitive_cube_add(location=location, scale=(1, 1, 1))
+                lp = bpy.context.object
+                lp.name = name
+                lp.display_type = 'BOUNDS'
+                lp.dimensions = dimensions
             all_locations.append(name)
+            lp_box = [lp.matrix_world @ Vector(lpBvert) for lpBvert in lp.bound_box]  # pd 外边框 8个顶点得xyz全局坐标系
+            # 这儿会牵扯到 原点位置信息 导致计算位移不准确
+            pd.location.x = (lp_box[0][0] + lp_box[4][0]) / 2
+            pd.location.y = (lp_box[0][1] + lp_box[2][1]) / 2
+            pd.location.z = lp_box[0][2]  # 原点在底部
+            # pd.location.z = lp_box[0][2] + obj_dimensions[2] / 2  # 原点在 中心
+            all_obj.remove(data)
 
 
 generate_located(all_locations)
+
+# //TODO  模型z轴摆放设置原点位置问题，在底部得话，设置z轴为定位块下部顶点得z坐标， 在中心得话，设置定位块下部顶点得z坐标 + 模型得z轴寸尺得一半
+# //TODO  地板可能因为其中一个定位块占据中间，而导致其他定位块放不进去, 可能有无限循环问题
+# //TODO  地板可能本身已有模型，随机定位块，需要防止定位块和已有模型冲突

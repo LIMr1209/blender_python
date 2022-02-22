@@ -3,7 +3,7 @@ import bpy
 import bpy_extras
 
 scene = bpy.context.scene
-obj = bpy.context.object
+obj = bpy.data.objects['Cube']
 vertices = obj.data.vertices  # 获取模型顶点
 camera = scene.camera
 

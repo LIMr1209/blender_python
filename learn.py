@@ -93,6 +93,9 @@ bpy.ops.object.delete(use_global=False)
 objs = [ob for ob in bpy.context.scene.objects if ob.type in ('CAMERA', 'POINT', 'EMPTY')]
 bpy.ops.object.delete({"selected_objects": objs})  # selected_objects 选中上下文  active_object 活动上下文
 
+obj = bpy.data.objects['Cube']
+bpy.data.objects.remove(obj, do_unlink=True)
+
 
 # 删除层级
 # https://blender.stackexchange.com/questions/44653/delete-parent-object-hierarchy-in-code/44786
