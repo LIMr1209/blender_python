@@ -143,7 +143,7 @@ bpy.ops.import_scene.fbx(filepath='')  # fbx
 # 保存blender
 bpy.ops.wm.save_mainfile()
 # 另存为
-bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath) # 另存为当前文件
+bpy.ops.wm.save_as_mainfile(filepath=bpy.data.filepath)  # 另存为当前文件
 # 打开blender
 bpy.ops.wm.open_mainfile(filepath='')
 # 追加blender文件内对象
@@ -195,7 +195,6 @@ for device in bpy.context.preferences.addons['cycles'].preferences.devices:
         gpu_device.append(device)
     device.use = False
 gpu_device[1].use = True
-
 
 bpy.ops.preferences.addon_enable(module='render_auto_tile_size')
 bpy.ops.preferences.addon_disable(module='render_auto_tile_size')
@@ -573,18 +572,17 @@ with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to):
     data_to.materials = ['StandardMaterial']  # 添加 BG36.blend StandardMaterial 材质数据块
 bpy.ops.wm.save_mainfile(filepath='')  # 保存 blender
 
-
-
 # 获取各顶点得坐标
 obj = bpy.context.active_object
 v = obj.data.vertices[0]
 coords = [(obj.matrix_world @ v.co) for v in obj.data.vertices]
 
-
 # 获取3d游标得位置
 bpy.context.scene.cursor.location
 # 设置object 原点为3d游标
 bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
+bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')  # 清楚父子级关系， 并保留变换
 
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"

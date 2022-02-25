@@ -7,10 +7,6 @@ floor_obj = ['物件37', '物件28']
 
 max_iterations = 1000  # 最大循环
 loop_iterations = 0  # 当前循环
-# 限制定位立方体 各个轴最大大小
-x_limit = 6
-y_limit = 6
-z_limit = 6
 random_count = len(ele_obj)  # 定位立方体数量
 floor = bpy.data.objects['floor']  # 地板
 floor_location = floor.location  # 地板位置
@@ -114,6 +110,24 @@ def is_intersect(all_locations, dimensions, location):
     return located_flag or obj_flag
 
 
+def test(pd_box, pd, lp, obj_dimensions):
+    origin_pd_x_range = [pd_box[0][0], pd_box[4][0]]  # 组合对象外包围框 x轴范围
+    origin_pd_y_range = [pd_box[0][1], pd_box[2][1]]  # 组合对象外包围框 y轴范围
+    origin_pd_z_range = [pd_box[0][2], pd_box[1][2]]  # 组合对象外包围框 z轴范围
+    centre_pd_x = round((origin_pd_x_range[0] + origin_pd_x_range[1]) / 2, 4)  # 组合对象外包围框 x轴中心
+    centre_pd_y = round((origin_pd_y_range[0] + origin_pd_y_range[1]) / 2, 4)  # 组合对象外包围框 y轴中心
+    centre_pd_z = round((origin_pd_z_range[0] + origin_pd_z_range[1]) / 2, 4)  # 组合对象外包围框 z轴中心
+    deviation_pd_x = round((pd.location.x - centre_pd_x), 4)  # x原点偏移量
+    deviation_pd_y = round((pd.location.y - centre_pd_y), 4)  # y原点偏移量
+    deviation_pd_z = round((pd.location.z - centre_pd_z), 4)  # z原点偏移量
+    lp_box = [lp.matrix_world @ Vector(lpBvert) for lpBvert in lp.bound_box]  # pd 外边框 8个顶点得xyz全局坐标系
+    # 这儿会牵扯到 原点位置信息 导致计算位移不准确
+    pd.location.x = (lp_box[0][0] + lp_box[4][0]) / 2 - deviation_pd_x
+    pd.location.y = (lp_box[0][1] + lp_box[2][1]) / 2 - deviation_pd_y
+    # pd.location.z = lp_box[0][2]  # 原点在底部
+    pd.location.z = lp_box[0][2] + obj_dimensions[2] / 2 - deviation_pd_z  # 原点在 中心
+
+
 def generate_located(all_locations):
     global loop_iterations
     # while len(all_locations) < random_count:
@@ -121,6 +135,7 @@ def generate_located(all_locations):
         data = all_obj[0]
         pd = data['name']
         obj_dimensions = data['dimensions']
+        pd_box = data['pd_box']
         loop_iterations += 1
         dimensions_x = round(random.uniform(obj_dimensions[0], obj_dimensions[0] + 0.5), 4)  # 随机 立方体 x 尺寸
         dimensions_y = round(random.uniform(obj_dimensions[1], obj_dimensions[1] + 0.5), 4)  # 随机 立方体 y 尺寸
@@ -149,12 +164,7 @@ def generate_located(all_locations):
                 lp.display_type = 'BOUNDS'
                 lp.dimensions = dimensions
             all_locations.append(name)
-            lp_box = [lp.matrix_world @ Vector(lpBvert) for lpBvert in lp.bound_box]  # pd 外边框 8个顶点得xyz全局坐标系
-            # 这儿会牵扯到 原点位置信息 导致计算位移不准确
-            pd.location.x = (lp_box[0][0] + lp_box[4][0]) / 2
-            pd.location.y = (lp_box[0][1] + lp_box[2][1]) / 2
-            pd.location.z = lp_box[0][2]  # 原点在底部
-            # pd.location.z = lp_box[0][2] + obj_dimensions[2] / 2  # 原点在 中心
+            test(pd_box, pd, lp, obj_dimensions)
             all_obj.remove(data)
 
 
