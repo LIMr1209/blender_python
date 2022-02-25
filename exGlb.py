@@ -123,5 +123,4 @@ bpy.context.view_layer.objects.active = pdc
 bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
 bpy.ops.object.select_all(action='DESELECT')
 
-
 # clearObjects()
