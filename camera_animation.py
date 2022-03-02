@@ -1,5 +1,6 @@
 import bpy
 
+# 相机动画渲染视频
 camera_times_num = 14
 scene = bpy.context.scene
 F = bpy.data.objects['default_f']

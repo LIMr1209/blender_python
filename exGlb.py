@@ -1,6 +1,7 @@
 import bpy
 
 
+# glb 保留变换信息，格式化为两层结构
 def export_gltf(output_file):
     for o in bpy.data.objects:
         if o.hide_select == False and o.hide_viewport == False:

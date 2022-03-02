@@ -2,7 +2,7 @@ import random
 from mathutils import Vector
 import bpy
 
-ele_obj = ['product.001']
+ele_obj = ['ProductContainer']
 random_count = len(ele_obj)  # 定位立方体数量
 floor = bpy.data.objects['floor']  # 地板
 floor_location = floor.location  # 地板位置
@@ -12,7 +12,6 @@ floor_vertices = [floor.matrix_world @ i.co for i in floor.data.vertices]
 direction = 'z'  # 在地板得哪个面放置物体
 random_x_l_range = [floor_vertices[0][0], floor_vertices[1][0]]  # x轴取值
 random_y_l_range = [floor_vertices[0][1], floor_vertices[2][1]]  # y轴取值
-
 
 
 def get_pd_box(obj, pd_box_list):
@@ -97,5 +96,5 @@ pd.location.x = (lp_box[0][0] + lp_box[4][0]) / 2 + deviation_pd_x
 pd.location.y = (lp_box[0][1] + lp_box[2][1]) / 2 + deviation_pd_y
 # pd.location.z = lp_box[0][2]  # 原点在底部
 # pd.location.z = lp_box[0][2] + obj_dimensions[2] / 2 + deviation_pd_z  # 原点在 中心
+pd.location.z = lp_box[0][2] + deviation_pd_z + dimensions_z / 2
 pd.location.z = (lp_box[0][2] + lp_box[1][2]) / 2 + deviation_pd_z
-

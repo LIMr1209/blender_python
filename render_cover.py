@@ -1,8 +1,9 @@
 import bpy
 from mathutils import Vector
 
+# 渲染模型封面图
 # 等比缩放 2, 设置物体原点为 物体外边框正中心， 设置坐标为0，0，0
-appropriate_dimensions = 9.6
+appropriate_dimensions = 11
 
 obj = bpy.data.objects['product2trans']
 

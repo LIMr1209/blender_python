@@ -1,6 +1,7 @@
 import bpy
 import os
 
+# 渲染图片的一部分
 # cut final image into 10 by 10 smaller images
 cut_into = 10
 # location of folder to save images to
