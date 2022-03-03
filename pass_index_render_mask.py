@@ -1,7 +1,7 @@
 import bpy
 
 # 物体索引渲染遮罩 mask 图 用作元素模型封面图 换底色
-obj_name = 'Cube'
+obj_name = 'product2trans'
 pass_index = 1
 output_file_path = r'C:\Users\thn\Desktop'
 scene = bpy.context.scene
