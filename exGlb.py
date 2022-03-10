@@ -13,6 +13,21 @@ def export_gltf(output_file):
                               export_lights=True)
     return {'FINISHED'}
 
+def remove_empty():
+    """
+    删除空对象
+    """
+    while True:
+        model = bpy.context.selected_objects[:]
+        # 删除空物体
+        objs = [
+            i
+            for i in model
+            if i.type in ["EMPTY", "LIGHT", "CAMERA"] and not i.children
+        ]
+        bpy.ops.object.delete({"selected_objects": objs})
+        if not objs:
+            break
 
 def clearObjects():
     try:
@@ -66,13 +81,14 @@ if input_file.endswith('.fbx'):
 if input_file.endswith('.obj'):
     bpy.ops.import_scene.obj(filepath=input_file)
 
+remove_empty()
 bpy.ops.object.make_single_user(object=True, obdata=True, material=True)
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 # bpy.ops.object.transform_apply(location=True, rotation=True)
 selected_objects = bpy.context.selected_objects
 
 for o in selected_objects:
-    o.scale = o.scale * 2
+    bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
     bpy.context.scene.collection.objects.unlink(o)
     originPd.objects.link(o)
 
