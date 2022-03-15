@@ -7,6 +7,7 @@ lp = bpy.data.objects["location_001"]
 lp1 = bpy.data.objects["location_002"]
 lp2 = bpy.data.objects["location_003"]
 all_lp = [lp, lp1, lp2]
+pd_list = ['cup_001', 'cup_002', 'coffee_maker_001']
 
 
 def get_pd_box(obj, pd_box_list):
@@ -17,7 +18,7 @@ def get_pd_box(obj, pd_box_list):
     return pd_box_list
 
 
-for i in ['coffe_001']:
+for i in pd_list:
     # bpy.ops.object.transform_apply(rotation=True)
     try:
         pd = bpy.data.objects[i]

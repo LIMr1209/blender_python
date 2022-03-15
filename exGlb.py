@@ -1,17 +1,28 @@
+import re
 import bpy
 
 
 # glb 保留变换信息，格式化为两层结构
 def export_gltf(output_file):
-    for o in bpy.data.objects:
-        if o.hide_select == False and o.hide_viewport == False:
-            o.select_set(True)
+    model = bpy.context.selected_objects[:]
+    rex = re.compile('\.\d+$')
+    for i in model:
+        # if file_kind == 'glb':
+        # 去除小数点
+        old_name = i.name
+        group = rex.search(old_name)
+        if group:
+            index = group.span()[0]
+            new_name = old_name[:index] + old_name[index + 1:]
+            i.name = new_name
+        i.name = i.name.replace(' - ', '_-_')
     # ex_path = data_path + '/uma/' + os.path.splitext(item)[0] + '_uma.glb'
     ex_path = output_file
     bpy.ops.export_scene.gltf(filepath=ex_path, export_colors=False, export_draco_mesh_compression_enable=True,
                               export_cameras=True, use_selection=True, use_visible=False, export_apply=True,
                               export_lights=True)
     return {'FINISHED'}
+
 
 def remove_empty():
     """
@@ -28,6 +39,7 @@ def remove_empty():
         bpy.ops.object.delete({"selected_objects": objs})
         if not objs:
             break
+
 
 def clearObjects():
     try:
