@@ -1,7 +1,3 @@
-import re
-import bpy
-
-
 # glb 保留变换信息，格式化为两层结构
 def export_gltf(output_file):
     model = bpy.context.selected_objects[:]
@@ -22,6 +18,11 @@ def export_gltf(output_file):
                               export_cameras=True, use_selection=True, use_visible=False, export_apply=True,
                               export_lights=True)
     return {'FINISHED'}
+
+
+import re
+import bpy
+from mathutils import Vector
 
 
 def remove_empty():
@@ -80,7 +81,7 @@ protect.color_tag = 'COLOR_01'
 originPd.color_tag = 'COLOR_02'
 joinPd.color_tag = 'COLOR_03'
 
-input_file = r'C:\Users\thn\Desktop\101749-61b7fecd26fe2a43644d26d8.glb'
+input_file = r'C:\Users\thn\Desktop\coffee_maker_001.glb'
 layer_collection = bpy.context.view_layer.layer_collection
 bpy.context.view_layer.active_layer_collection = layer_collection
 
@@ -93,7 +94,6 @@ if input_file.endswith('.fbx'):
 if input_file.endswith('.obj'):
     bpy.ops.import_scene.obj(filepath=input_file)
 
-remove_empty()
 bpy.ops.object.make_single_user(object=True, obdata=True, material=True)
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 # bpy.ops.object.transform_apply(location=True, rotation=True)
@@ -103,6 +103,8 @@ for o in selected_objects:
     bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
     bpy.context.scene.collection.objects.unlink(o)
     originPd.objects.link(o)
+
+remove_empty()
 
 for o in originPd.objects:
     if o.type == 'MESH' and o.hide_select == False:
@@ -152,4 +154,20 @@ bpy.context.view_layer.objects.active = pdc
 bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
 bpy.ops.object.select_all(action='DESELECT')
 
+pd_box = [pd.matrix_world @ Vector(pdBvert) for pdBvert in pd.bound_box]
+x = (pd_box[0][0] + pd_box[4][0]) / 2
+y = (pd_box[0][1] + pd_box[2][1]) / 2
+z = (pd_box[0][2] + pd_box[1][2]) / 2
+
+for o in originPd.objects:
+    o.location.x -= x - pdc.location.x
+    o.location.y -= y - pdc.location.y
+    o.location.z -= z - pdc.location.z
+
 # clearObjects()
+pd.select_set(True)
+bpy.context.view_layer.objects.active = pd
+bpy.context.scene.cursor.location = x, y, z
+bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+pd.location = 0, 0, 0
+bpy.context.scene.cursor.location = 0, 0, 0
