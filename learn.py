@@ -587,3 +587,7 @@ bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')  # 清楚父子级关�
 # 启动 crowdrender
 # ./blender -noaudio -b --python ~/.config/blender/2.93/scripts/addons/crowdrender/src/cr/serv_int_start.py -- -t "server_int_proc"
 #
+
+len(obj.data.vertices)  # 顶点数
+len(obj.data.edges)  # 三角面数 多边形数
+len(obj.data.polygons)  # 面数
