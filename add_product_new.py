@@ -487,14 +487,14 @@ def update_material(material_option):
         matOutput = nodes.get('matOutput')
         color = i.get('color')
         map = i.get('map')
-        metalness = i.get('metalness')
+        metalness = i.get('metalness', 0)
         metalnessMap = i.get('metalnessMap')
-        roughness = i.get('roughness')
+        roughness = i.get('roughness', 0)
         roughnessMap = i.get('roughnessMap')
-        ior = i.get('ior')
-        transmission = i.get('transmission')
-        emissive = i.get('emissive')
-        emissiveIntensity = i.get('emissiveIntensity')
+        ior = i.get('ior', 0)
+        transmission = i.get('transmission', 0)
+        emissive = i.get('emissive', '#000000')
+        emissiveIntensity = i.get('emissiveIntensity', 0)
         emissiveMap = i.get('emissiveMap')
         normalMap = i.get('normalMap')
         Basecolor(color, map, baseColorIMG, baseColorRGB, baseColorMix, links, BSDF)
@@ -506,19 +506,25 @@ def update_material(material_option):
         Normal(normalMap, NormalMap, normalIMG, links, BSDF)
 
 
-material_option = []
+material_option = [
+    {'name': 'cgaxis_modela_116_17_10_01', 'color': '#2CBC0F',
+     'map': r'C:\Users\thn\Desktop\soul_data\material\marble_016\Color.jpg'},
+    {'name': 'cup_001001', 'color': '#BC252F', 'map': r'C:\Users\thn\Desktop\soul_data\material\candy_001\Color.jpg'}
+]
 product_option = [
-    {'file_path': r'C:\Users\thn\Downloads\62343a3f08de3ffca7eeb246.glb', 'location': [-4.960, 4.753, 0, 000],
-     'scale': [1, 1, 1], 'rotate': [80.61, 47.71, -77.40]},
-    {'file_path': r'C:\Users\thn\Downloads\62343a2a08de3ffca7eeb243.glb', 'location': [6.266, 6.254, 0, 000],
-     'scale': [1, 1, 1], 'rotate': [33.43, -70.81, 0.00]},
+    {'file_path': r'C:\Users\thn\Desktop\soul_data\element\6239a46e67144e33686aadba.glb',
+     'location': [-2.409, 6.175, 6.693],
+     'scale': [2, 2, 2], 'rotate': [-91.81, -33.41, -93.08]},
+    {'file_path': r'C:\Users\thn\Desktop\soul_data\element\6239a4c067144e33686aadc9.glb',
+     'location': [4.324, 6.573, 4.813],
+     'scale': [1, 1, 1], 'rotate': [56.59, -27.88, 72.85]},
 ]
 standard()
 for d in product_option:
     add_product_new(d['file_path'])
     location = (d['location'][0], -d['location'][2], d['location'][1])
     scale = (d['scale'][0], d['scale'][2], d['scale'][1])
-    # rotation_euler = (d['rotate'][0], -d['rotate'][2], d['rotate'][1])
-    rotation_euler = (math.radians(d['rotate'][0]), -math.radians(d['rotate'][2]), math.radians(d['rotate'][1]))
+    rotation_euler = (d['rotate'][0], -d['rotate'][2], d['rotate'][1])
+    # rotation_euler = (math.radians(d['rotate'][0]), -math.radians(d['rotate'][2]), math.radians(d['rotate'][1]))
     update_transform(location, scale, rotation_euler)
 update_material(material_option)
