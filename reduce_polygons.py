@@ -11,11 +11,21 @@ decimate_proportion = 0.5  # 精简比例
 all_obj = bpy.data.objects
 for i in all_obj:
     if i.type == 'MESH':
-        len(i.data.vertices)  # 顶点数
-        len(i.data.edges)  # 三角面数 多边形数
-        len(i.data.polygons)  # 面数
-        decimate = i.modifiers.new(name='DECIMATE', type='DECIMATE')  # 新建精简修改器
-        decimate.ratio = 0.1  # 比率
+        if len(i.data.polygons) > 1000:
+            decimate = i.modifiers.new(name='DECIMATE', type='DECIMATE')  # 新建精简修改器
+            decimate.ratio = 0.001  # 比率
+
+count = 0
+all_obj = bpy.context.selected_objects[:]
+for i in all_obj:
+    if i.type == 'MESH':
+        a = len(i.data.polygons)  # 面数
+        print(a)
+        count += a
+        b = i.modifiers['DECIMATE'].face_count
+        print(a, b)
+        # if b > a:
+        #     print(a, b, i.name)
 
 all_image = bpy.data.images
 for i in all_image:
@@ -31,7 +41,7 @@ ex_path = r'C:\Users\thn\Desktop\精简测试\精简.gltf'
 # export_apply 应用修改器
 # export_format  GLTF_SEPARATE gltf 分离式
 # export_texture_dir 外部资源路径
-# export_image_format JPEG 图片转化为 JPEG
+# export_image_format PNG 图片转化为 JPEG
 bpy.ops.export_scene.gltf(filepath=ex_path, export_format='GLTF_SEPARATE', export_colors=True,
                           export_texture_dir='textures',
                           export_draco_mesh_compression_enable=True, export_materials='EXPORT',
