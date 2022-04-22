@@ -29,7 +29,6 @@ new_m = matrix_convert_three_to_blend(m)
 r = R.from_matrix(new_m)
 print(r.as_euler('xyz', degrees=True))
 
-
 # blender 脚本
 # from mathutils import Euler, Matrix
 # from math import radians
@@ -57,3 +56,20 @@ def matrix_convert_blend_to_three(m):
 new_m = matrix_convert_blend_to_three(m)
 r = R.from_matrix(new_m)
 print(r.as_euler('zyx', degrees=True))
+
+origin_r = R.from_euler('xyz', [23, 12, 44], degrees=True)
+
+m = origin_r.as_matrix()
+print(m)
+
+from math import *
+
+x, y, z = 23, 12, 44
+x, y, z = x * pi / 180, y * pi / 180, z * pi / 180
+r11, r12, r13 = cos(z) * cos(y), cos(z) * sin(y) * sin(x) - sin(z) * cos(x), cos(z) * sin(y) * cos(x) + sin(z) * sin(x)
+r21, r22, r23 = sin(z) * cos(y), sin(z) * sin(y) * sin(x) + cos(z) * cos(x), sin(z) * sin(y) * cos(x) - cos(z) * sin(x)
+r31, r32, r33 = -sin(y), cos(y) * sin(x), cos(y) * cos(x)
+print('欧拉角({0:f}, {1:f}, {2:f})转换为旋转矩阵'.format(x * 180 / pi, y * 180 / pi, z * 180 / pi))
+print('{0:f} , {1:f} , {2:f}'.format(r11, r12, r13))
+print('{0:f} , {1:f} , {2:f}'.format(r21, r22, r23))
+print('{0:f} , {1:f} , {2:f}'.format(r31, r32, r33))
