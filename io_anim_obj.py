@@ -1,20 +1,27 @@
 bl_info = {
-    "name": "Export Obj Animation",
-    "author": "Campbell Barton",
+    "name": "Export Obj Animation",  # 插件名称
+    "author": "lizhenbin",  # 作者
     "version": (0, 1),
     "blender": (2, 80, 0),
-    "location": "File > Export > Obj Animation (.py)",
-    "description": "Export Obj Animation (.py)",
+    "location": "File > Export > Obj Animation (.py)",  # 触发位置
+    "description": "Export Obj Animation (.py)",  # 描述
     "warning": "",
     "support": 'OFFICIAL',
-    "category": "Import-Export",
+    "category": "Import-Export",  # 分类 导入导出
 }
 
 import bpy
 
 
 def write_obj_animation(filepath, frame_start, frame_end, only_selected=False):
-    fw = open(filepath, 'w').write
+    """
+    :param filepath: 文件地址
+    :param frame_start: 开始帧
+    :param frame_end: 结束帧
+    :param only_selected: 仅导出选中的物体
+    :return:
+    """
+    fw = open(filepath, 'w').write  # 打开文件
 
     fw("import bpy\n"
        "objs = []\n"
@@ -26,6 +33,7 @@ def write_obj_animation(filepath, frame_start, frame_end, only_selected=False):
 
     objs = []
 
+    # 所有物体
     for obj in scene.objects:
         if only_selected and not obj.select_get():
             continue
@@ -33,13 +41,15 @@ def write_obj_animation(filepath, frame_start, frame_end, only_selected=False):
         objs.append(obj)
         fw("objs.append('%s')\n\n" % obj.name)
 
+    # 帧范围
     frame_range = range(frame_start, frame_end + 1)
 
     for f in frame_range:
         scene.frame_set(f)
         fw("# new frame\n")
-        fw("scene.frame_set(%d + frame)\n" % f)
+        fw("scene.frame_set(%d + frame)\n" % f)  # 切换帧
 
+        # 写入动画属性
         for i, obj in enumerate(objs):
             fw("obj = bpy.data.objects[objs[%d]]\n" % i)
 
@@ -60,7 +70,6 @@ from bpy_extras.io_utils import ExportHelper
 
 
 class ObjAnimationExporter(bpy.types.Operator, ExportHelper):
-    """Save a python script which re-creates cameras and markers elsewhere"""
     bl_idname = "export_animation.obj"
     bl_label = "Export Obj Animation"
 
